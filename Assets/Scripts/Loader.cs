@@ -11,6 +11,7 @@ public class Loader : MonoBehaviour {
     public GameController gameControllerPrefab;
     public DifficultyContoroller difficultyControllerPrefab;
     public MessengerController messengerControllerPrefab;
+    public InputController inputControllerPrefab;
 
 	void Awake() {
 		if (ShootController.shared == null)
@@ -27,5 +28,7 @@ public class Loader : MonoBehaviour {
             Instantiate(this.difficultyControllerPrefab);
         if (MessengerController.shared == null)
             Instantiate(this.messengerControllerPrefab);
+        if (InputController.shared == null)
+            Instantiate(this.inputControllerPrefab);
     }
 }

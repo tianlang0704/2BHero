@@ -28,7 +28,7 @@ public class IndexWrapper {
 }
 
 public class DifficultyContoroller : ControllerBase {
-    public float waveDuration = 5f;
+    public float waveDuration = 7f;
     public List<float> enemySpeedFactors = new List<float>() { 0.4f };
     public float enemySpeedInfStep = 0.04f;
     public List<float> enemyIntervalFactors = new List<float>() { 1f };

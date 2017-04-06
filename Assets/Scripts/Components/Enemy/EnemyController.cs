@@ -22,13 +22,13 @@ public class EnemyController : ControllerBase {
     public string enemyGoalMarkName = "EG1";
     public EnemyGoal goalPrefab = null;
     [Header("Spawn Params")]
-    public float intervalConst = 2f;
+    public float intervalConst = 3f;
     public float minInterval = 0.5f;
-    public int rngPosIdxMax;
-    [Header("Difficulty Factors")]
+    [Header("Difficulty Factors(Set by difficulty controller)")]
     public float dropSpeed;
     public float moveSpeed;
     public float spawnInterval;
+    public int rngPosIdxMax;
 
     private List<GameObject> skyPosMarks = new List<GameObject>();
     private List<GameObject> groundPosMarks = new List<GameObject>();

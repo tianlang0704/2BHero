@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,26 +10,16 @@ public class ShootController : MonoBehaviour {
     public string shooterMarkName = "ShooterMark";
 
     private List<Shooter> shooters = new List<Shooter>();
-    private float shootPressTime;
     private float shootTimeFactor;
     private int prefabIndex;
 
     private void Update() {
-        VariableForceShoot();
-    }
-
-    private void VariableForceShoot() {
-        if (Input.GetKeyDown(KeyCode.F)) {
-            this.shootPressTime = Time.time;
-        }
-
-        if (Input.GetKeyUp(KeyCode.F)) {
-            float timePassed = Time.time - this.shootPressTime;
-            if(timePassed > this.maxPressTime) {
+        InputController.shared.VariableDurationShoot((timePassed)=> {
+            if (timePassed > this.maxPressTime) {
                 timePassed = this.maxPressTime;
             }
             this.shooters.ForEach((Shooter s) => { s.Shoot(timePassed * this.shootTimeFactor); });
-        }
+        });
     }
 
     public void ChangeShooter(int idx) {

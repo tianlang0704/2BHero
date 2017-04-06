@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,18 +12,19 @@ public class PlayerController : MonoBehaviour {
     private Player player;
 
 	private void Update () {
-        VerticalMovement();
-    }
+        InputController.shared.PlayerMoveUp(()=> {
+            if (this.currentPosition < this.maxPosition) {
+                this.currentPosition += 1;
+                this.player.Move(this.positionMarks[this.currentPosition]);
+            }
+        });
 
-    private void VerticalMovement() {
-        if(Input.GetKeyDown(KeyCode.UpArrow) && (this.currentPosition < this.maxPosition)) {
-            this.currentPosition += 1;
-            this.player.Move(this.positionMarks[this.currentPosition]);
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow) && (this.currentPosition > 0)) {
-            this.currentPosition -= 1;
-            this.player.Move(this.positionMarks[this.currentPosition]);
-        }
+        InputController.shared.PlayerMoveDown(() => {
+            if (this.currentPosition > 0) {
+                this.currentPosition -= 1;
+                this.player.Move(this.positionMarks[this.currentPosition]);
+            }
+        });
     }
 
 // Mark: Singleton initialization
