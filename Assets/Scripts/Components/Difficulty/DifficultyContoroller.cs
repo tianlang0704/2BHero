@@ -35,7 +35,7 @@ public class DifficultyContoroller : ControllerBase {
     public float enemyIntervalInfStep = -0.03f;
     public List<float> enemyHPFactors = new List<float>() { 1 };
     public float enemyHPInfStep = 0;
-    public List<int> rngPosMaxes = new List<int>() { 1, 2, 2, 2, 2, 3 };
+    public List<int> rngPosMaxes = new List<int>() { 1, 1, 2, 2, 2, 2, 2, 3 };
     public List<IndexWrapper> enemyIndexes = new List<IndexWrapper>() {
         new List<int>() { 0 },
         new List<int>() { 0, 1, 2 },

@@ -5,9 +5,10 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
     public List<string> positionMarkNames = new List<string>() { "L1", "L2", "L3" };
-    public int currentPosition = 0;
+    public int defaultPosition = 0;
 
     private int maxPosition = 0;
+    private int currentPosition = 0;
     private List<GameObject> positionMarks = new List<GameObject>();
     private Player player;
 
@@ -43,6 +44,8 @@ public class PlayerController : MonoBehaviour {
         this.maxPosition = this.positionMarkNames.Count - 1;
         this.player = GameObject.FindObjectOfType<Player>();
         InitializePositionsMarks();
+        this.currentPosition = this.defaultPosition;
+        this.player.Move(this.positionMarks[this.currentPosition]);
     }
 
     private void InitializePositionsMarks() {
