@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 [RequireComponent(typeof(LifeCycleDelegates))]
@@ -15,7 +16,5 @@ public class ControllerBase : MonoBehaviour {
         InitializeDelegates();
     }
 
-    virtual protected void InitializeDelegates() {
-
-    }
+    virtual protected void InitializeDelegates() { }
 }

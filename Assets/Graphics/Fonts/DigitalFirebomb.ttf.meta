@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: c2ccb5b114cc77748b2ee4b35dc0a316
+timeCreated: 1491898201
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Digital Firebomb
+  fontNames:
+  - Digital Firebomb
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

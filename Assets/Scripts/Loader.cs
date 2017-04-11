@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Loader : MonoBehaviour {
 
+    // TODO: Create a loadable base and put them all into a list
     public ShootController shootControllerPrefab;
     public ObjectPoolController poolControllerPrefab;
     public PlayerController playerControllerPrefab;
     public EnemyController enemyControllerPrefab;
     public GameController gameControllerPrefab;
     public DifficultyContoroller difficultyControllerPrefab;
-    public MessengerController messengerControllerPrefab;
+    public DelegateCenter delegateCenterPrefab;
     public InputController inputControllerPrefab;
+    public SceneController sceneControllerPrevab;
 
 	void Awake() {
 		if (ShootController.shared == null)
@@ -26,9 +28,11 @@ public class Loader : MonoBehaviour {
             Instantiate(this.gameControllerPrefab);
         if (DifficultyContoroller.shared == null)
             Instantiate(this.difficultyControllerPrefab);
-        if (MessengerController.shared == null)
-            Instantiate(this.messengerControllerPrefab);
+        if (DelegateCenter.shared == null)
+            Instantiate(this.delegateCenterPrefab);
         if (InputController.shared == null)
             Instantiate(this.inputControllerPrefab);
+        if (SceneController.shared == null)
+            Instantiate(this.sceneControllerPrevab);
     }
 }

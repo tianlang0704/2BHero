@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public partial class MessengerController {
+public partial class DelegateCenter {
     public Action StartSpawningEnemy;
     public Action StopSpawningEnemy;
     public Action ClearAllEnemies;
@@ -49,7 +50,7 @@ public class EnemyController : ControllerBase {
 
     public void ClearAllEnemies() {
         this.enemyPrefabs.ForEach((Enemy e) => {
-            MessengerController.shared.RecycleAll(e.GetComponent<Poolable>());
+            DelegateCenter.shared.RecycleAll(e.GetComponent<Poolable>());
         });
     }
 
@@ -74,7 +75,7 @@ public class EnemyController : ControllerBase {
 
     public void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
         Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = MessengerController.shared.GetPoolable(
+        Railable enemyOnRail = DelegateCenter.shared.GetPoolable(
             enemyPoolable,
             spawnMark.transform.position,
             spawnMark.transform.rotation)
@@ -97,25 +98,20 @@ public class EnemyController : ControllerBase {
         });
     }
 
-// Mark: Singleton initialization
-    public static EnemyController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (EnemyController.shared == null) {
-            EnemyController.shared = this;
-        } else if (EnemyController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
+// Mark: Scene initialization
+    public void SetupEnemyControllerForScene() {
         // Initialize enmey generating positions
-        InitializePositionsMarks();
+        ParsePositionsMarks();
         // Initialize enemy goal
-        InitializeGoal();
+        GenerateGoalsFromMarks();
     }
 
-    private void InitializePositionsMarks() {
-        // Initialize enemy generation position marks
+    private void ParsePositionsMarks() {
+        this.skyPosMarks.Clear();
+        this.groundPosMarks.Clear();
+        this.allPosMarks.Clear();
+
+        // Parse enemy generation position marks
         foreach (string s in this.skyMarkNames) {
             GameObject go = GameObject.Find(s);
             if (!go) { Debug.Log("No mark object found for sky position: " + s); }
@@ -130,7 +126,7 @@ public class EnemyController : ControllerBase {
         this.allPosMarks.AddRange(this.skyPosMarks);
     }
 
-    private void InitializeGoal() {
+    private void GenerateGoalsFromMarks() {
         List<GameObject> gos = new List<GameObject>(GameObject.FindObjectsOfType<GameObject>());
         gos.ForEach((GameObject go) => {
             if (go.name != this.enemyGoalMarkName) { return; }
@@ -143,10 +139,24 @@ public class EnemyController : ControllerBase {
                 scaleKeeper.transform);
         });
     }
+// End: Scene initialization
+
+// Mark: Singleton initialization
+    public static EnemyController shared = null;
+    override protected void Awake() {
+        base.Awake();
+        if (EnemyController.shared == null) {
+            EnemyController.shared = this;
+        } else if (EnemyController.shared != this) {
+            Destroy(this.gameObject);
+            return;
+        }
+        DontDestroyOnLoad(this.gameObject);
+    }
 
     override protected void InitializeDelegates() {
         base.InitializeDelegates();
-        MessengerController mc = MessengerController.shared;
+        DelegateCenter mc = DelegateCenter.shared;
         // Enemy parameter settings
         Action<float> SetEnemyDropSpeed = (value)=> { this.dropSpeed = value; };
         mc.SetEnemyDropSpeed += SetEnemyDropSpeed;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-class SceneController: MonoBehaviour
+class EffectController: MonoBehaviour
 {
 
 }

@@ -26,7 +26,7 @@ public class EnemyWithHP : Enemy {
         this.hp -= dmger.damage;
         this.GetComponent<Animator>().SetTrigger("hit");
         if (!this.callOnDie && this.hp <= 0) {
-            MessengerController.shared.OnScore(this.score);
+            DelegateCenter.shared.Score(this.score);
             this.callOnDie = true;
             this.killer = dmger;
         }

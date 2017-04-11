@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class ShootController : MonoBehaviour {
+public class ShootController : ControllerBase {
     public float maxPressTime = 0.35f;
     public List<Shooter> shooterPrefabs = new List<Shooter>();
     public int defaultPrefabIndex = 0;
@@ -39,7 +40,12 @@ public class ShootController : MonoBehaviour {
         }
     }
 
-    private void ReparseShooterMark() {
+// Mark: Scene initialization
+    public void SetupShootControllerForScene() {
+        GenerateShootersFromMarks();
+    }
+
+    public void GenerateShootersFromMarks() {
         // Clear old shooters before parsing the mark
         this.shooters.ForEach((Shooter s) => { Destroy(s); });
         this.shooters.Clear();
@@ -55,10 +61,12 @@ public class ShootController : MonoBehaviour {
             this.shooters.Add(newShooter);
         });
     }
+// End: Scene initialization
 
 // Mark: Singleton initialization
     public static ShootController shared = null;
-    void Awake() {
+    protected override void Awake() {
+        base.Awake();
         if (ShootController.shared == null) {
             ShootController.shared = this;
         } else if (ShootController.shared != this) {
@@ -68,7 +76,6 @@ public class ShootController : MonoBehaviour {
         DontDestroyOnLoad(this.gameObject);
         this.shootTimeFactor = 1 / this.maxPressTime;
         this.prefabIndex = this.defaultPrefabIndex;
-        ReparseShooterMark();
     }
 // End: Singleton initialization
 }

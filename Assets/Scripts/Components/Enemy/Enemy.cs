@@ -3,10 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EnemyPositionStatus {
-    InAir, OnGround
-}
-
 [RequireComponent(typeof(Poolable))]
 [RequireComponent(typeof(Railable))]
 [RequireComponent(typeof(LifeCycleDelegates))]
@@ -31,6 +27,7 @@ public class Enemy : MonoBehaviour {
     virtual protected void OnCollisionEnter2D(Collision2D collision) { }
 
     virtual protected void Awake() {
+        this.gameObject.SetActive(false);
         this.GetComponent<LifeCycleDelegates>().SubOnRecycle(OnRecycle);
     }
 }

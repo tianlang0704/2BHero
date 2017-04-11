@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnemyPositionStatus {
+    InAir, OnGround
+}
+
 public class GroundDetector : MonoBehaviour {
     public EnemyPositionStatus defaultPosStat = EnemyPositionStatus.InAir;
     public string groundTag = "Ground";

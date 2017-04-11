@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class MessengerController {
+public partial class DelegateCenter {
     public Action<Action> StartDifficultLoop;
     public Action StopDifficultLoop;
 }
@@ -139,7 +139,7 @@ public class DifficultyContoroller : ControllerBase {
     }
 
     private void UpdateEnemyDifficulty(int wave) {
-        MessengerController mc = MessengerController.shared;
+        DelegateCenter mc = DelegateCenter.shared;
         mc.SetEnemyDropSpeed(GetMoveSpeedFactor(wave));
         mc.SetEnemyMoveSpeed(GetMoveSpeedFactor(wave));
         mc.SetEnemySpawnInterval(GetSpawnIntervalFactor(wave));
@@ -163,7 +163,7 @@ public class DifficultyContoroller : ControllerBase {
 
     protected override void InitializeDelegates() {
         base.InitializeDelegates();
-        MessengerController mc = MessengerController.shared;
+        DelegateCenter mc = DelegateCenter.shared;
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         mc.StartDifficultLoop += StartDifficultLoop;
         mc.StopDifficultLoop += StopDifficultLoop;

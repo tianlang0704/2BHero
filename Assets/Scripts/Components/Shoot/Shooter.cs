@@ -3,14 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shooter : MonoBehaviour
-{
-    [Header("Resource")]
+public class Shooter : MonoBehaviour {
+    [Header("Bullet Resource")]
     public string spawnMarkName = "SpawnMark";
     public Poolable bullet = null;
-    [Header("Physics")]
+    [Header("Bullet Physics")]
     public float forceMin = 0f;
-    public float forceDelta = -0.25f;
+    public float forceDelta = -0.20f;
     public float riseFactor = 0.1f;
     public float torque = 0.001f;
     [Header("Animation")]
@@ -18,9 +17,11 @@ public class Shooter : MonoBehaviour
 
     private Transform spawnMark;
 
+    protected virtual Animator animator { get { return this.GetComponent<Animator>(); } }
+
 // Mark: Shoot functions
     public void Shoot(float factor) {
-        this.GetComponent<Animator>().SetTrigger("attack");
+        this.animator.SetTrigger("attack");
         DelayShoot(this.ShootDelay, factor);
     }
 
@@ -35,7 +36,7 @@ public class Shooter : MonoBehaviour
 
     public void DoShoot(float factor) {
         float horizontalForce = this.forceMin + this.forceDelta * factor;
-        Rigidbody2D newBulletRb2d = MessengerController.shared.GetPoolable(
+        Rigidbody2D newBulletRb2d = DelegateCenter.shared.GetPoolable(
             this.bullet,
             this.spawnMark.position,
             this.gameObject.transform.rotation)
