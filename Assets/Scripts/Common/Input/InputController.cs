@@ -9,6 +9,7 @@ enum SwipeDirection {
 
 public class InputController : ControllerBase {
     private float shootPressBeginTime;
+    private bool shootPressed = false;
 
     public void PlayerMoveUp(Action action) {
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
@@ -30,27 +31,52 @@ public class InputController : ControllerBase {
         }
     }
 
-    public void VariableDurationShoot(Action<float> action) {
+    public void VariableDurationShoot(Action<float> end, Action<float> inProgress = null, Action start = null) {
+        // Keyboard shoot
         if (Input.GetKeyDown(KeyCode.F)) {
-            this.shootPressBeginTime = Time.time;
+            BeginShootPress(start);
         }
 
         if (Input.GetKeyUp(KeyCode.F)) {
-            float timePassed = Time.time - this.shootPressBeginTime;
-            action(timePassed);
+            EndShootPress(end, inProgress);
         }
 
+        // Touch shoot
         if (Input.touchCount == 1) {
             if (Input.GetTouch(0).phase == TouchPhase.Began) {
-                this.shootPressBeginTime = Time.time;
+                BeginShootPress(start);
             }
 
-            if (Input.GetTouch(0).phase == TouchPhase.Ended && !this.isSwipe) {
-                float timePassed = Time.time - this.shootPressBeginTime;
-                action(timePassed);
+            if (Input.GetTouch(0).phase == TouchPhase.Ended) {
+                EndShootPress(end, inProgress);
             }
         }
+
+        DuringShootPress(inProgress);
     }
+
+    private void BeginShootPress(Action start) {
+        this.shootPressBeginTime = Time.time;
+        this.shootPressed = true;
+        start();
+    }
+
+    private void DuringShootPress(Action<float> inProgress) {
+        if (shootPressed) {
+            if (inProgress != null) { inProgress(Time.time - this.shootPressBeginTime); }
+        }
+    }
+
+    private void EndShootPress(Action<float> complete, Action<float> inProgress = null) {
+        this.shootPressed = false;
+        if (inProgress != null) { inProgress(0f); }
+        if (!this.isSwipe) {
+            float timePassed = Time.time - this.shootPressBeginTime;
+            complete(timePassed);
+        }
+    }
+
+
 // Mark: Swipe functions
     public float minSwipeDist = 50.0f;
     public float maxSwipeTime = 0.5f;

@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public partial class DelegateCenter {
+    public Action<float> OnShootHoldUpdate;
+    public Action OnShootEnd;
+    public Action OnShootStart;
+}
+
 public class ShootController : ControllerBase {
     public float maxPressTime = 0.35f;
     public List<Shooter> shooterPrefabs = new List<Shooter>();
@@ -16,10 +22,26 @@ public class ShootController : ControllerBase {
 
     private void Update() {
         InputController.shared.VariableDurationShoot((timePassed)=> {
+            // Shoot end handler
+            if (timePassed > this.maxPressTime) {
+                timePassed = this.maxPressTime;
+                if (DelegateCenter.shared.OnShootHoldUpdate != null) {
+                    DelegateCenter.shared.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
+                }
+            }
+            this.shooters.ForEach((Shooter s) => { s.Shoot(timePassed * this.shootTimeFactor); });
+            if (DelegateCenter.shared.OnShootEnd != null) { DelegateCenter.shared.OnShootEnd(); }
+        }, (timePassed)=> {
+            // Shoot in progress handler
             if (timePassed > this.maxPressTime) {
                 timePassed = this.maxPressTime;
             }
-            this.shooters.ForEach((Shooter s) => { s.Shoot(timePassed * this.shootTimeFactor); });
+            if (DelegateCenter.shared.OnShootHoldUpdate != null) {
+                DelegateCenter.shared.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
+            }
+        }, () => {
+            // Shoot start handler
+            if (DelegateCenter.shared.OnShootStart != null) { DelegateCenter.shared.OnShootStart(); }
         });
     }
 
