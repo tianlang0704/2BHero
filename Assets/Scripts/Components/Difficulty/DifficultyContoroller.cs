@@ -108,7 +108,7 @@ public class DifficultyContoroller : ControllerBase {
 
 // Mark: Difficulty loop functions
     private Coroutine difficultyLoop = null;
-    private void StartDifficultLoop(Action gameStartCallback) {
+    private void StartDifficultLoop(Action gameStartCallback = null) {
         // Stop the previous loop if there is one
         if (this.difficultyLoop != null) {
             StopCoroutine(this.difficultyLoop);
@@ -130,7 +130,7 @@ public class DifficultyContoroller : ControllerBase {
         yield return new WaitForFixedUpdate();
         int wave = 0;
         UpdateEnemyDifficulty(wave);
-        gameStartCallback();
+        if(gameStartCallback != null) { gameStartCallback(); }
         while (true) {
             UpdateEnemyDifficulty(wave);
             yield return new WaitForSeconds(this.waveDuration);
@@ -148,7 +148,7 @@ public class DifficultyContoroller : ControllerBase {
     }
 // Mark: Difficulty loop functions
 
- // Mark: Singleton initialization
+// Mark: Singleton initialization
     public static DifficultyContoroller shared = null;
     override protected void Awake() {
         base.Awake();

@@ -21,6 +21,7 @@ public partial class DelegateCenter {
 public class GameController : ControllerBase {
     public int defaultScore = 0;
     public int defaultLife = 3;
+    public ScoreMenu scoreMenuPrefab;
 
     private int score;
     private int life;
@@ -48,7 +49,7 @@ public class GameController : ControllerBase {
     }
 
     public void GameRestart() {
-        GameOver();
+        GameOver(false);
         GameStart();
     }
 
@@ -71,17 +72,24 @@ public class GameController : ControllerBase {
         DelegateCenter.shared.StartDifficultLoop(() => {
             this.isGameStarted = true;
             DelegateCenter.shared.StartSpawningEnemy();
-            DelegateCenter.shared.OnGameStart();
+            if (DelegateCenter.shared.OnGameStart != null) { DelegateCenter.shared.OnGameStart(); }
         });
     }
 
+
+    // Explicit overload for delegate
     public void GameOver() {
+        GameOver(true);
+    }
+
+    public void GameOver(bool callOnGameover) {
         if (!this.isGameStarted) { return; }
         this.isGameStarted = false;
         DelegateCenter.shared.StopDifficultLoop();
         DelegateCenter.shared.StopSpawningEnemy();
         DelegateCenter.shared.ClearAllEnemies();
-        DelegateCenter.shared.OnGameOver();
+        if(DelegateCenter.shared.OnGameOver != null && callOnGameover) { DelegateCenter.shared.OnGameOver(); }
+        
     }
 // End: Game controls
 
@@ -117,7 +125,7 @@ public class GameController : ControllerBase {
     }
 
     virtual protected void OnGameOver() {
-
+        this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score);
     }
 
     virtual protected void OnFirstUpdateAfterStart() {

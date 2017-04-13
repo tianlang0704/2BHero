@@ -10,6 +10,7 @@ enum SwipeDirection {
 public class InputController : ControllerBase {
     private float shootPressBeginTime;
     private bool shootPressed = false;
+    private float detectableAreaSize;
 
     public void PlayerMoveUp(Action action) {
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
@@ -42,7 +43,7 @@ public class InputController : ControllerBase {
         }
 
         // Touch shoot
-        if (Input.touchCount == 1) {
+        if (Input.touchCount == 1 && Input.GetTouch(0).position.y < this.detectableAreaSize) {
             if (Input.GetTouch(0).phase == TouchPhase.Began) {
                 BeginShootPress(start);
             }
@@ -158,6 +159,7 @@ public class InputController : ControllerBase {
         }
         DontDestroyOnLoad(this.gameObject);
         this.minSqrSwipeDist = this.minSwipeDist * this.minSwipeDist;
+        this.detectableAreaSize = Screen.height * 0.9f;
     }
 // End: Singleton initialization
 }

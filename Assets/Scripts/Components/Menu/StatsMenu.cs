@@ -14,9 +14,8 @@ public class StatsMenu : MonoBehaviour {
     }
 
     public void HandleOption() {
-        OptionMenu optMenu = Instantiate(this.optionMenuPrefab);
         DelegateCenter.shared.GamePause();
-        optMenu.ShowMenu(() => {
+        this.optionMenuPrefab.ClonePrefabAndShow(() => {
             DelegateCenter.shared.GameResume();
         });
     }
@@ -27,7 +26,6 @@ public class StatsMenu : MonoBehaviour {
 
     public void HandleStop() {
         DelegateCenter.shared.GameOver();
-        DelegateCenter.shared.LoadMenuScene();
     }
 
     private void OnScoreChange(int score) {

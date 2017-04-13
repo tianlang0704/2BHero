@@ -13,15 +13,23 @@ public class Shooter : MonoBehaviour {
     public float riseFactor = 0.1f;
     public float torque = 0.001f;
     [Header("Animation")]
-    public float ShootDelay = 0.55f;
+    public float ShootDelay = 0f;
 
     private Transform spawnMark;
 
-    protected virtual Animator animator { get { return this.GetComponent<Animator>(); } }
+    protected virtual Animator targetAnimator { get { return this.GetComponent<Animator>(); } }
 
 // Mark: Shoot functions
+    public void Aim() {
+        this.targetAnimator.SetBool("aim", true);
+    }
+
+    public void AimStop() {
+        this.targetAnimator.SetBool("aim", false);
+    }
+
     public void Shoot(float factor) {
-        this.animator.SetTrigger("attack");
+        this.targetAnimator.SetTrigger("attack");
         DelayShoot(this.ShootDelay, factor);
     }
 
@@ -42,10 +50,10 @@ public class Shooter : MonoBehaviour {
             this.gameObject.transform.rotation)
             .GetComponent<Rigidbody2D>();
         if (newBulletRb2d) {
-            newBulletRb2d
-                .AddForce(new Vector2(horizontalForce, Math.Abs(horizontalForce * this.riseFactor)), ForceMode2D.Impulse);
-            newBulletRb2d
-                .AddTorque(this.torque * (1.5f - factor), ForceMode2D.Impulse);
+            newBulletRb2d.AddForce(
+                new Vector2(horizontalForce, Math.Abs(horizontalForce * this.riseFactor)), 
+                ForceMode2D.Impulse);
+            newBulletRb2d.AddTorque(this.torque * (1.5f - factor), ForceMode2D.Impulse);
         }
     }
 // End: Shoot functions

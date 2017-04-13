@@ -13,7 +13,7 @@ public class MainMenu : MonoBehaviour {
 
     public void HandleOption() {
         Debug.Log("Option pressed");
-        Instantiate(optionMenuPrefab).ShowMenu(() => {
+        this.optionMenuPrefab.ClonePrefabAndShow(() => {
             this.gameObject.SetActive(true);
         });
         this.gameObject.SetActive(false);
