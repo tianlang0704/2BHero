@@ -22,4 +22,8 @@ public class MainMenu : MonoBehaviour {
     public void HandleCredit() {
         Debug.Log("Credit pressed");
     }
+
+    public void HandleExit() {
+        Application.Quit();
+    }
 }
