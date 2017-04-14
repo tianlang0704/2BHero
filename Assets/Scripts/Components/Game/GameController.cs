@@ -11,6 +11,8 @@ public partial class DelegateCenter {
     public Action<int> OnDifficultyIncrement;
     public Action OnGameOver;
     public Action OnGameStart;
+    public Action OnGamePause;
+    public Action OnGameResume;
     public Action GamePauseResume;
     public Action GamePause;
     public Action GameResume;
@@ -32,20 +34,25 @@ public class GameController : ControllerBase {
 
 // Mark: Game controls
     public void GamePauseResume() {
-        this.isPaused = !this.isPaused;
-        Time.timeScale = this.isPaused ? 0 : 1;
+        if (this.isPaused) {
+            GameResume();
+        }else {
+            GamePause();
+        }
     }
 
     public void GamePause() {
         if (this.isPaused) { return; }
         this.isPaused = true;
         Time.timeScale = 0;
+        if (DelegateCenter.shared.OnGamePause != null) { DelegateCenter.shared.OnGamePause(); }
     }
 
     public void GameResume() {
         if (!this.isPaused) { return; }
         this.isPaused = false;
         Time.timeScale = 1;
+        if (DelegateCenter.shared.OnGameResume != null) { DelegateCenter.shared.OnGameResume(); }
     }
 
     public void GameRestart() {
@@ -68,6 +75,7 @@ public class GameController : ControllerBase {
         this.isFirstFixedUpdateAfterStart = true;
         ResetLife();
         ResetScore();
+        GameResume();
 
         DelegateCenter.shared.StartDifficultLoop(() => {
             this.isGameStarted = true;
@@ -128,6 +136,14 @@ public class GameController : ControllerBase {
         this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score);
     }
 
+    virtual protected void OnGamePause() {
+
+    }
+
+    virtual protected void OnGameResume() {
+
+    }
+
     virtual protected void OnFirstUpdateAfterStart() {
         if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
         if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
@@ -141,7 +157,7 @@ public class GameController : ControllerBase {
         }
     }
 
-    // Mark: Singleton initialization
+// Mark: Singleton initialization
     public static GameController shared = null;
     override protected void Awake() {
         base.Awake();
@@ -163,6 +179,8 @@ public class GameController : ControllerBase {
         mc.DeductLife += DeductLife;
         mc.OnGameOver += OnGameOver;
         mc.OnGameStart += OnGameStart;
+        mc.OnGamePause += OnGamePause;
+        mc.OnGameResume += OnGameResume;
         mc.GamePauseResume += GamePauseResume;
         mc.GameRestart += GameRestart;
         mc.GamePause += GamePause;
@@ -174,6 +192,8 @@ public class GameController : ControllerBase {
             mc.DeductLife -= DeductLife;
             mc.OnGameOver -= OnGameOver;
             mc.OnGameStart -= OnGameStart;
+            mc.OnGamePause -= OnGamePause;
+            mc.OnGameResume -= OnGameResume;
             mc.GamePauseResume -= GamePauseResume;
             mc.GameRestart -= GameRestart;
             mc.GamePause -= GamePause;

@@ -8,6 +8,7 @@ public class StatsMenu : MonoBehaviour {
     public OptionMenu optionMenuPrefab;
     public Text scoreText;
     public Text lifeText;
+    public Text bulletText;
 
     public void HandlePause() {
         DelegateCenter.shared.GamePauseResume();
@@ -36,13 +37,19 @@ public class StatsMenu : MonoBehaviour {
         this.lifeText.text = life.ToString();
     }
 
+    private void OnBulletCountChange(Shooter s) {
+        this.bulletText.text = s.bulletCount.ToString();
+    }
+
     private void Start() {
         DelegateCenter dc = DelegateCenter.shared;
         dc.OnScoreChange += OnScoreChange;
         dc.OnLifeChange += OnLifeChange;
+        dc.OnBulletCountChange += OnBulletCountChange;
         this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
             dc.OnScoreChange -= OnScoreChange;
             dc.OnLifeChange -= OnLifeChange;
+            dc.OnBulletCountChange -= OnBulletCountChange;
         });
     }
 }

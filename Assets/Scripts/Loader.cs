@@ -13,9 +13,10 @@ public class Loader : MonoBehaviour {
     public DifficultyContoroller difficultyControllerPrefab;
     public DelegateCenter delegateCenterPrefab;
     public InputController inputControllerPrefab;
-    public SceneController sceneControllerPrevab;
+    public SceneController sceneControllerPrefab;
+    public EffectController effectControllerPrefab;
 
-	void Awake() {
+    void Awake() {
 		if (ShootController.shared == null)
             Instantiate(this.shootControllerPrefab);
         if (ObjectPoolController.shared == null)
@@ -33,6 +34,8 @@ public class Loader : MonoBehaviour {
         if (InputController.shared == null)
             Instantiate(this.inputControllerPrefab);
         if (SceneController.shared == null)
-            Instantiate(this.sceneControllerPrevab);
+            Instantiate(this.sceneControllerPrefab);
+        if (EffectController.shared == null)
+            Instantiate(this.effectControllerPrefab);
     }
 }
