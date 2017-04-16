@@ -8,6 +8,7 @@ public partial class DelegateCenter {
 }
 
 [RequireComponent(typeof(LifeCycleDelegates))]
+[RequireComponent(typeof(AudioSource))]
 public class Shooter : MonoBehaviour {
     [Header("Bullet Resource")]
     public string spawnMarkName = "SpawnMark";
@@ -22,6 +23,12 @@ public class Shooter : MonoBehaviour {
     [Header("Unit Settings")]
     public int magazineSize = 10;
     public float reloadDuration = 1f;
+    [Header("Sound")]
+    [SerializeField] private List<AudioClip> _shootSounds = new RandomList<AudioClip>();
+    public RandomList<AudioClip> shootSounds { get { return (RandomList<AudioClip>)_shootSounds; } }
+    [SerializeField] private List<AudioClip> _reloadSounds = new RandomList<AudioClip>();
+    public RandomList<AudioClip> reloadSounds { get { return (RandomList<AudioClip>)_reloadSounds; } }
+
     public int bulletCount {
         get { return _bulletCount; }
         set {
@@ -31,11 +38,13 @@ public class Shooter : MonoBehaviour {
             }
         }
     }
+    public bool isAiming = false;
 
     private Transform spawnMark;
     private int _bulletCount;
     private bool shootingEnabled = true;
     private bool isReloading = false;
+    private AudioSource audioSource;
 
     protected virtual Animator targetAnimator { get { return this.GetComponent<Animator>(); } }
 
@@ -66,6 +75,7 @@ public class Shooter : MonoBehaviour {
     }
 
     public void DoShoot(float factor) {
+        this.audioSource.PlayOneShot(this.shootSounds.GetRandom(), 0.7f);
         float horizontalForce = this.forceMin + this.forceDelta * factor;
         Rigidbody2D newBulletRb2d = DelegateCenter.shared.GetPoolable(
             this.bullet,
@@ -83,11 +93,14 @@ public class Shooter : MonoBehaviour {
 
 // Mark: Assistant functions
     public void Aim() {
-        if (!this.shootingEnabled) { return; }
+        if (!this.shootingEnabled || this.isAiming) { return; }
+        this.isAiming = true;
         this.targetAnimator.SetBool("aim", true);
     }
 
     public void AimStop() {
+        if (!this.isAiming) { return; }
+        this.isAiming = false;
         this.targetAnimator.SetBool("aim", false);
     }
 
@@ -95,6 +108,7 @@ public class Shooter : MonoBehaviour {
         if (this.isReloading) { return; }
         this.isReloading = true;
         this.targetAnimator.SetTrigger("reload");
+        this.audioSource.PlayOneShot(this.reloadSounds.GetRandom(), 0.3f);
         DisableShoot();
         StartCoroutine(ReloadRoutine(this.reloadDuration, () => {
             this.isReloading = false;
@@ -111,6 +125,7 @@ public class Shooter : MonoBehaviour {
 
     private void Awake() {
         this.spawnMark = this.transform.Find(this.spawnMarkName);
+        this.audioSource = this.GetComponent<AudioSource>();
     }
 
     private void Start() {

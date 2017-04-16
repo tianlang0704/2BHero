@@ -23,30 +23,34 @@ public class ShootController : ControllerBase {
     private int prefabIndex;
 
     private void Update() {
-        InputController.shared.VariableDurationShoot((timePassed)=> {
-            // Shoot press end handler
-            if (timePassed > this.maxPressTime) {
-                timePassed = this.maxPressTime;
-                if (DelegateCenter.shared.OnShootHoldUpdate != null) {
-                    DelegateCenter.shared.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
-                }
-            }
-            this.shooters.ForEach((Shooter s) => {
-                s.Shoot(timePassed * this.shootTimeFactor);
-                s.AimStop();
-            });
-            if (DelegateCenter.shared.OnShootEnd != null) { DelegateCenter.shared.OnShootEnd(); }
-        }, (timePassed)=> {
-            // Shoot press in progress handler
-            if (timePassed > this.maxPressTime) {
-                timePassed = this.maxPressTime;
-            }
+        InputController.shared.VariableDurationShoot((timePassed, isShoot)=> {
+            // Shoot Press End Handler
+            if (timePassed > this.maxPressTime) { timePassed = this.maxPressTime; }
+            // Do last press in progress update to set progress to 0
             if (DelegateCenter.shared.OnShootHoldUpdate != null) {
                 DelegateCenter.shared.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
             }
-        }, () => {
-            // Shoot press start handler
+            // Stop aiming no matter what (is move or shoot)
+            this.shooters.ForEach((Shooter s) => { s.AimStop(); });
+            // Shoot if is shoot (not swiping or move)
+            if (isShoot) {
+                this.shooters.ForEach((Shooter s) => { s.Shoot(timePassed * this.shootTimeFactor); });
+            }
+            if (DelegateCenter.shared.OnShootEnd != null) { DelegateCenter.shared.OnShootEnd(); }
+        }, (timePassed)=> {
+            // Shoot Press In Progress Handler
+            // Play aim animation when overlapped animation ends and key is still pressed
             this.shooters.ForEach((Shooter s) => { s.Aim(); });
+            // Call shoot press on hold event
+            if (DelegateCenter.shared.OnShootHoldUpdate != null) {
+                // Use shoot time factor to make the parameter range from 0 to 1
+                if (timePassed > this.maxPressTime) { timePassed = this.maxPressTime; }
+                DelegateCenter.shared.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
+            }
+        }, () => {
+            // Shoot Press Start Handler
+            this.shooters.ForEach((Shooter s) => { s.Aim(); });
+            // Call shoot press begin
             if (DelegateCenter.shared.OnShootStart != null) { DelegateCenter.shared.OnShootStart(); }
         });
     }

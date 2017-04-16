@@ -32,7 +32,11 @@ public class InputController : ControllerBase {
         }
     }
 
-    public void VariableDurationShoot(Action<float> end, Action<float> inProgress = null, Action start = null) {
+    public void VariableDurationShoot(
+        Action<float, bool> end, 
+        Action<float> inProgress = null, 
+        Action start = null
+    ) {
         // Keyboard shoot
         if (Input.GetKeyDown(KeyCode.F)) {
             BeginShootPress(start);
@@ -68,12 +72,15 @@ public class InputController : ControllerBase {
         }
     }
 
-    private void EndShootPress(Action<float> complete, Action<float> inProgress = null) {
+    private void EndShootPress(Action<float, bool> end, Action<float> inProgress = null) {
         this.shootPressed = false;
         if (inProgress != null) { inProgress(0f); }
+        float timePassed = Time.time - this.shootPressBeginTime;
+        //Set success flag to be false when it ends up to be a swipe
         if (!this.isSwipe) {
-            float timePassed = Time.time - this.shootPressBeginTime;
-            complete(timePassed);
+            end(timePassed, true);
+        }else {
+            end(timePassed, false);
         }
     }
 
@@ -113,7 +120,8 @@ public class InputController : ControllerBase {
 
                     if (this.isSwipe && 
                         gestureTime < this.maxSwipeTime && 
-                        gestureSqrDist > this.minSqrSwipeDist) {
+                        gestureSqrDist > this.minSqrSwipeDist
+                    ) {
                         Vector2 direction = touch.position - this.fingerStartPos;
                         Vector2 swipeType = Vector2.zero;
 

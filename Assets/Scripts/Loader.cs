@@ -5,6 +5,7 @@ using UnityEngine;
 public class Loader : MonoBehaviour {
 
     // TODO: Create a loadable base and put them all into a list
+    // and remodel this class to facilitate more functions
     public ShootController shootControllerPrefab;
     public ObjectPoolController poolControllerPrefab;
     public PlayerController playerControllerPrefab;
@@ -15,6 +16,7 @@ public class Loader : MonoBehaviour {
     public InputController inputControllerPrefab;
     public SceneController sceneControllerPrefab;
     public EffectController effectControllerPrefab;
+    public SoundController soundControllerPrefab;
 
     void Awake() {
 		if (ShootController.shared == null)
@@ -37,5 +39,7 @@ public class Loader : MonoBehaviour {
             Instantiate(this.sceneControllerPrefab);
         if (EffectController.shared == null)
             Instantiate(this.effectControllerPrefab);
+        if (SoundController.shared == null)
+            Instantiate(this.soundControllerPrefab);
     }
 }

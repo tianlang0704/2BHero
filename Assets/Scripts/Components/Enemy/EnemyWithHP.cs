@@ -4,32 +4,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Droppable))]
+[RequireComponent(typeof(AudioSource))]
 public class EnemyWithHP : Enemy {
     [Header("Unit Settings")]
     public int defaultHP = 10;
     public int score = 10;
     public bool isDropOnSpawn = false;
     public bool isDropOnDie = false;
+    [Header("Animation Settings")]
+    public float delayDeath = 1f;
+    [Header("Sound Settings")]
+    [SerializeField] private List<AudioClip> _hitSounds = new RandomList<AudioClip>();
+    public RandomList<AudioClip> hitSounds { get { return (RandomList<AudioClip>)_hitSounds; } }
+    [SerializeField] private List<AudioClip> _dieSounds = new RandomList<AudioClip>();
+    public RandomList<AudioClip> dieSounds { get { return (RandomList<AudioClip>)_dieSounds; } }
 
     private int hp = 10;
     private BulletWithDamage killer = null;
     private bool callOnDie = false;
-
-    override protected void OnCollisionEnter2D(Collision2D collision) {
-        base.OnCollisionEnter2D(collision);
-        if (collision.gameObject.tag == "Bullet") {
-            Hit(collision.gameObject.GetComponent<BulletWithDamage>());
-        }
-    }
+    private AudioSource audioSource;
 
     virtual public void Hit(BulletWithDamage dmger) {
         this.hp -= dmger.damage;
-        this.GetComponent<Animator>().SetTrigger("hit");
-        if (!this.callOnDie && this.hp <= 0) {
-            DelegateCenter.shared.Score(this.score);
-            this.callOnDie = true;
-            this.killer = dmger;
-        }
+        OnHit(dmger);
     }
 
     virtual protected void LateUpdate() {
@@ -40,6 +37,15 @@ public class EnemyWithHP : Enemy {
         }
     }
 
+    override protected void OnCollisionEnter2D(Collision2D collision) {
+        base.OnCollisionEnter2D(collision);
+        if (collision.gameObject.tag == "Bullet") {
+            Hit(collision.gameObject.GetComponent<BulletWithDamage>());
+        }
+    }
+
+
+// Mark: Enemy Events
     virtual protected void OnDie() {
         // Change layer so that bullet won't hit anymore
         this.gameObject.layer = LayerMask.NameToLayer("EnemyDead");
@@ -59,7 +65,18 @@ public class EnemyWithHP : Enemy {
 
     private void AnimatdRecycle() {
         this.GetComponent<Animator>().SetTrigger("dying");
-        base.Recycle(1);
+        this.audioSource.PlayOneShot(this.dieSounds.GetRandom(), 0.9f);
+        base.Recycle(this.delayDeath);
+    }
+
+    virtual protected void OnHit(BulletWithDamage dmger) {
+        this.GetComponent<Animator>().SetTrigger("hit");
+        this.audioSource.PlayOneShot(this.hitSounds.GetRandom(), 0.9f);
+        if (!this.callOnDie && this.hp <= 0) {
+            DelegateCenter.shared.Score(this.score);
+            this.callOnDie = true;
+            this.killer = dmger;
+        }
     }
 
     override protected void OnSpawn() {
@@ -88,4 +105,10 @@ public class EnemyWithHP : Enemy {
     protected override void OnRecycle() {
         base.OnRecycle();
     }
+
+    protected override void Awake() {
+        base.Awake();
+        this.audioSource = this.GetComponent<AudioSource>();
+    }
+    // Mark: Enemy Events
 }

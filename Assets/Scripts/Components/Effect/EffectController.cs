@@ -12,7 +12,6 @@ public class EffectController: ControllerBase {
 
     }
 
-
 // Mark: Singleton initialization
     public static EffectController shared = null;
     override protected void Awake() {
