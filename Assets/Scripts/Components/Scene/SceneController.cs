@@ -39,7 +39,7 @@ public class SceneController : ControllerBase {
     }
 
     private void InitSafeBGMForScene(string sceneName) {
-        if (!this.lifeCycle.afterFirstFixedUpdate) {
+        if (!this.lifeCycle.isAfterFirstFixedUpdate) {
             this.lifeCycle.OnceOnFirstFixedUpdate(() => {
                 DelegateCenter.shared.PlayBGMForSetting(sceneName);
             });

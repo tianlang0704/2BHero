@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum SubEvent {
-    OnDestroy, OnRecycle, OnFirstFixedUpdate
+    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate
 }
 
 public enum UnsubEvent{
-    OnDestroy, OnRecycle, OnFirstFixedUpdate
+    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate
 }
 
 public class SubInfo {
@@ -41,7 +41,9 @@ public class LifeCycleDelegates : MonoBehaviour {
     public Action OnDestroyDelegate;
     public Action OnRecycleDelegate;
     public Action OnFirstFixedUpdateDelegate;
-    [HideInInspector] public bool afterFirstFixedUpdate = false;
+    public Action OnFirstUpdateDelegate;
+    [HideInInspector] public bool isAfterFirstFixedUpdate = false;
+    [HideInInspector] public bool isAfterFirstUpdate = false;
 
     private Poolable poolable = null;
     private List<SubInfo> removeTracker = new List<SubInfo>();
@@ -59,6 +61,10 @@ public class LifeCycleDelegates : MonoBehaviour {
         return Sub(sub, SubEvent.OnFirstFixedUpdate, UnsubEvent.OnFirstFixedUpdate);
     }
 
+    public SubInfo OnceOnFirstdUpdate(Action sub) {
+        return Sub(sub, SubEvent.OnFirstUpdate, UnsubEvent.OnFirstUpdate);
+    }
+
     public SubInfo Sub(Action sub, SubEvent subOn, UnsubEvent unsubOn) {
         SubInfo newSubInfo = new SubInfo(sub, subOn, unsubOn);
         switch (subOn) {
@@ -70,6 +76,9 @@ public class LifeCycleDelegates : MonoBehaviour {
                 break;
             case SubEvent.OnFirstFixedUpdate:
                 this.OnFirstFixedUpdateDelegate += sub;
+                break;
+            case SubEvent.OnFirstUpdate:
+                this.OnFirstUpdateDelegate += sub;
                 break;
             default: break;
         }
@@ -102,6 +111,9 @@ public class LifeCycleDelegates : MonoBehaviour {
                 case SubEvent.OnFirstFixedUpdate:
                     this.OnFirstFixedUpdateDelegate -= s.sub;
                     break;
+                case SubEvent.OnFirstUpdate:
+                    this.OnFirstUpdateDelegate -= s.sub;
+                    break;
                 default: break;
             }
             this.removeTracker.Remove(s);
@@ -127,12 +139,25 @@ public class LifeCycleDelegates : MonoBehaviour {
         List<SubInfo> result = this.removeTracker.FindAll((SubInfo s) => { return s.unsubOn == UnsubEvent.OnFirstFixedUpdate; });
         UnsubAll(result);
     }
+
+    private void OnFirstUpdate() {
+        if (this.OnFirstUpdateDelegate != null) { this.OnFirstUpdateDelegate(); }
+        List<SubInfo> result = this.removeTracker.FindAll((SubInfo s) => { return s.unsubOn == UnsubEvent.OnFirstUpdate; });
+        UnsubAll(result);
+    }
 // End: Life Cycle Events
 
     private IEnumerator WaitForFixedUpateRoutine() {
         yield return new WaitForFixedUpdate();
-        this.afterFirstFixedUpdate = true;
+        this.isAfterFirstFixedUpdate = true;
         OnFirstFixedUpdate();
+    }
+
+    private void Update() {
+        if (!this.isAfterFirstUpdate) {
+            this.isAfterFirstUpdate = true;
+            OnFirstUpdate();
+        }
     }
 
     private void Awake() {

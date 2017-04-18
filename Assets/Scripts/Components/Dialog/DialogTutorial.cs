@@ -6,7 +6,7 @@ using UnityEngine;
 public class DialogTutorial : PopupDialogBase {
 
     private void Awake() {
-        this.GetComponent<LifeCycleDelegates>().OnceOnFirstFixedUpdate(() => {
+        this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
             if (DelegateCenter.shared.GetEnableTutorial()) {
                 this.gameObject.SetActive(true);
                 DelegateCenter.shared.GamePause();
