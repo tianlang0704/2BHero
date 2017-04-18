@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PopupMenuBase : MonoBehaviour {
+public class PopupDialogBase : MonoBehaviour {
     private Action closeAction = null;
 
     public virtual void CloseMenu() {

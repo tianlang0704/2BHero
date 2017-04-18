@@ -7,20 +7,14 @@ using UnityEngine.SceneManagement;
 public partial class DelegateCenter {
     public Action LoadGameScene;
     public Action LoadMenuScene;
+    public Action LoadCreditsScene;
 }
 
-[RequireComponent(typeof(AudioSource))]
+
 public class SceneController : ControllerBase {
     public string menuSceneName = "menu";
     public string gameSceneName = "game";
-    public bool bgmEnabled = true;
-    [SerializeField] private List<AudioClip> _menuBGMs = new RandomList<AudioClip>();
-    public RandomList<AudioClip> menuBGMs { get { return (RandomList<AudioClip>)_menuBGMs; } }
-    [SerializeField] private List<AudioClip> _gameBGMs = new RandomList<AudioClip>();
-    public RandomList<AudioClip> gameBGMs { get { return (RandomList<AudioClip>)_gameBGMs; } }
-
-    private AudioSource audioSource;
-    private bool isBGMPlaying = false;
+    public string creditsSceneName = "credits";
 
     public void LoadGameScene() {
         SceneManager.LoadScene(this.gameSceneName);
@@ -30,53 +24,29 @@ public class SceneController : ControllerBase {
         SceneManager.LoadScene(this.menuSceneName);
     }
 
+    public void LoadCreditsScene() {
+        SceneManager.LoadScene(this.creditsSceneName);
+    }
+
     virtual protected void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-        StopBGM();
-        if (scene.name == this.gameSceneName) {
-            // Not using delegate because setup needs to be in Awake,
-            // which is earlier than delegate setup.
-            ObjectPoolController.shared.SetupPoolControllerForScene();
-            EnemyController.shared.SetupEnemyControllerForScene();
-            PlayerController.shared.SetupPlayerControllerForScene();
-            ShootController.shared.SetupShootControllerForScene();
+        InitSafeBGMForScene(scene.name);
+        // Not using delegate because setup needs to be in Awake,
+        // which is earlier than delegate setup.
+        ObjectPoolController.shared.SetupPoolControllerForScene();
+        EnemyController.shared.SetupEnemyControllerForScene();
+        PlayerController.shared.SetupPlayerControllerForScene();
+        ShootController.shared.SetupShootControllerForScene();
+    }
+
+    private void InitSafeBGMForScene(string sceneName) {
+        if (!this.lifeCycle.afterFirstFixedUpdate) {
+            this.lifeCycle.OnceOnFirstFixedUpdate(() => {
+                DelegateCenter.shared.PlayBGMForSetting(sceneName);
+            });
+        }else {
+            DelegateCenter.shared.StopBGM();
+            DelegateCenter.shared.PlayBGMForSetting(sceneName);
         }
-    }
-
-// Mark: BGM functions
-    public void EnableBGM() {
-        if (this.bgmEnabled) { return; }
-        this.bgmEnabled = true;
-        PlayBGM();
-    }
-
-    public void DisableBGM() {
-        if (!this.bgmEnabled) { return; }
-        this.bgmEnabled = false;
-        StopBGM();
-    }
-
-    public void StopBGM() {
-        if (!this.audioSource.isPlaying) { return; }
-        this.audioSource.Stop();
-    }
-
-    public void PlayBGM() {
-        if (this.audioSource.isPlaying) { return; }
-        if (SceneManager.GetActiveScene().name == this.gameSceneName) {
-            this.audioSource.PlayOneShot(this.gameBGMs.GetRandom());
-        }else if (SceneManager.GetActiveScene().name == this.menuSceneName) {
-            this.audioSource.PlayOneShot(this.menuBGMs.GetRandom());
-        }
-    }
-
-    public void PlayBGMContinuously() {
-        if (!this.bgmEnabled) { return; }
-        PlayBGM();
-    }
-// End: BGM functions
-
-    protected virtual void Update() {
-        PlayBGMContinuously();
     }
 
 // Mark: Singleton initialization
@@ -91,11 +61,11 @@ public class SceneController : ControllerBase {
         }
         DontDestroyOnLoad(this.gameObject);
 
+        // Setting OnSceneLoaded delegate in awake for getting the first call
         SceneManager.sceneLoaded += OnSceneLoaded;
         this.lifeCycle.OnceOnDestroy(() => {
             SceneManager.sceneLoaded -= OnSceneLoaded;
         });
-        this.audioSource = this.GetComponent<AudioSource>();
     }
 
     protected override void InitializeDelegates() {
@@ -105,9 +75,11 @@ public class SceneController : ControllerBase {
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         mc.LoadGameScene += LoadGameScene;
         mc.LoadMenuScene += LoadMenuScene;
+        mc.LoadCreditsScene += LoadCreditsScene;
         lc.OnceOnDestroy(() => {
             mc.LoadGameScene -= LoadGameScene;
             mc.LoadMenuScene -= LoadMenuScene;
+            mc.LoadCreditsScene -= LoadCreditsScene;
         });
     }
 // End: Singleton initialization

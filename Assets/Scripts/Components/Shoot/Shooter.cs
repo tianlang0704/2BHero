@@ -38,12 +38,12 @@ public class Shooter : MonoBehaviour {
             }
         }
     }
-    public bool isAiming = false;
-
+    
     private Transform spawnMark;
     private int _bulletCount;
     private bool shootingEnabled = true;
     private bool isReloading = false;
+    private bool isAiming = false;
     private AudioSource audioSource;
 
     protected virtual Animator targetAnimator { get { return this.GetComponent<Animator>(); } }
@@ -108,7 +108,7 @@ public class Shooter : MonoBehaviour {
         if (this.isReloading) { return; }
         this.isReloading = true;
         this.targetAnimator.SetTrigger("reload");
-        this.audioSource.PlayOneShot(this.reloadSounds.GetRandom(), 0.3f);
+        this.audioSource.PlayOneShot(this.reloadSounds.GetRandom(), 0.7f);
         DisableShoot();
         StartCoroutine(ReloadRoutine(this.reloadDuration, () => {
             this.isReloading = false;

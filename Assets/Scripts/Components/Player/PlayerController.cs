@@ -17,6 +17,7 @@ public class PlayerController : ControllerBase {
 
 	private void Update () {
         InputController.shared.PlayerMoveUp(()=> {
+            if (DelegateCenter.shared.IsGamePaused()) { return; }
             if (this.currentPosition < this.maxPosition) {
                 this.currentPosition += 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -24,6 +25,7 @@ public class PlayerController : ControllerBase {
         });
 
         InputController.shared.PlayerMoveDown(() => {
+            if (DelegateCenter.shared.IsGamePaused()) { return; }
             if (this.currentPosition > 0) {
                 this.currentPosition -= 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -45,7 +47,7 @@ public class PlayerController : ControllerBase {
         this.positionMarks.Clear();
         foreach (string s in this.positionMarkNames) {
             GameObject go = GameObject.Find(s);
-            if (!go) { Debug.Log("No mark object found for position: " + s); }
+            if (!go) { Debug.Log("No mark object found for position: " + s); continue; }
             this.positionMarks.Add(go);
         }
         this.maxPosition = this.positionMarks.Count - 1;
@@ -83,6 +85,7 @@ public class PlayerController : ControllerBase {
 // Mark: Singleton initialization
     public static PlayerController shared = null;
     override protected void Awake() {
+        base.Awake();
         if (PlayerController.shared == null) {
             PlayerController.shared = this;
         }else if (PlayerController.shared != this) {

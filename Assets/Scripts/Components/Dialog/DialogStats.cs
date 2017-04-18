@@ -1,23 +1,41 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public partial class DelegateCenter {
+    public Action<bool> SetStatsBarActive; 
+}
+
 [RequireComponent(typeof(LifeCycleDelegates))]
-public class StatsMenu : MonoBehaviour {
-    public OptionMenu optionMenuPrefab;
+public class DialogStats : MonoBehaviour {
+    public DialogOption optionMenuPrefab;
+    public DialogPause pauseMenuPrefab;
     public Text scoreText;
     public Text lifeText;
     public Text bulletText;
 
+    private DialogOption optionMenu = null;
+    private DialogPause pauseMenu = null;
+
     public void HandlePause() {
-        DelegateCenter.shared.GamePauseResume();
+        if(this.pauseMenu != null) { this.pauseMenu.CloseMenu(); return; }
+        DelegateCenter.shared.GamePause();
+        this.pauseMenu = Instantiate(this.pauseMenuPrefab);
+        this.pauseMenu.Show(() => {
+            DelegateCenter.shared.GameResume();
+            this.pauseMenu = null;
+        });
     }
 
     public void HandleOption() {
-        DelegateCenter.shared.GamePause();
-        this.optionMenuPrefab.ClonePrefabAndShow(() => {
-            DelegateCenter.shared.GameResume();
+        if (this.optionMenu != null) { return; }
+        if (this.pauseMenu == null) { HandlePause(); } else { this.pauseMenu.CancelCountdown(); }
+        this.optionMenu = Instantiate(this.optionMenuPrefab);
+        this.optionMenu.Show(() => {
+            HandlePause();
+            this.optionMenu = null;
         });
     }
 
@@ -46,10 +64,13 @@ public class StatsMenu : MonoBehaviour {
         dc.OnScoreChange += OnScoreChange;
         dc.OnLifeChange += OnLifeChange;
         dc.OnBulletCountChange += OnBulletCountChange;
+        Action<bool> SetStatsBarActive = (active) => { this.gameObject.SetActive(active); };
+        dc.SetStatsBarActive += SetStatsBarActive;
         this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
             dc.OnScoreChange -= OnScoreChange;
             dc.OnLifeChange -= OnLifeChange;
             dc.OnBulletCountChange -= OnBulletCountChange;
+            dc.SetStatsBarActive -= SetStatsBarActive;
         });
     }
 }

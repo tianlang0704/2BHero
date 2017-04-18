@@ -63,7 +63,7 @@ public class InputController : ControllerBase {
     private void BeginShootPress(Action start) {
         this.shootPressBeginTime = Time.time;
         this.shootPressed = true;
-        start();
+        if (start != null) { start(); }
     }
 
     private void DuringShootPress(Action<float> inProgress) {
@@ -159,6 +159,7 @@ public class InputController : ControllerBase {
 // Mark: Singleton initialization
     public static InputController shared = null;
     override protected void Awake() {
+        base.Awake();
         if (InputController.shared == null) {
             InputController.shared = this;
         } else if (InputController.shared != this) {

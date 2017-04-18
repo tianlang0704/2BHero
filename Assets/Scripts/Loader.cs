@@ -6,6 +6,7 @@ public class Loader : MonoBehaviour {
 
     // TODO: Create a loadable base and put them all into a list
     // and remodel this class to facilitate more functions
+    public List<ControllerBase> controllerPrefabs = new List<ControllerBase>();
     public ShootController shootControllerPrefab;
     public ObjectPoolController poolControllerPrefab;
     public PlayerController playerControllerPrefab;
@@ -17,6 +18,7 @@ public class Loader : MonoBehaviour {
     public SceneController sceneControllerPrefab;
     public EffectController effectControllerPrefab;
     public SoundController soundControllerPrefab;
+    public SettingsController settingsControllerPrefab;
 
     void Awake() {
 		if (ShootController.shared == null)
@@ -41,5 +43,7 @@ public class Loader : MonoBehaviour {
             Instantiate(this.effectControllerPrefab);
         if (SoundController.shared == null)
             Instantiate(this.soundControllerPrefab);
+        if (SettingsController.shared == null)
+            Instantiate(this.settingsControllerPrefab);
     }
 }

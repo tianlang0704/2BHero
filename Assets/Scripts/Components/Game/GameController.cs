@@ -13,50 +13,53 @@ public partial class DelegateCenter {
     public Action OnGameStart;
     public Action OnGamePause;
     public Action OnGameResume;
-    public Action GamePauseResume;
+    public Action<Action, Action> GamePauseResume;
     public Action GamePause;
     public Action GameResume;
     public Action GameRestart;
+    public Action GameStart;
     public Action GameOver;
+    public Func<bool> IsGamePaused;
 }
 
 public class GameController : ControllerBase {
     public int defaultScore = 0;
     public int defaultLife = 3;
-    public ScoreMenu scoreMenuPrefab;
+    public DialogScore scoreMenuPrefab;
+    public bool isPaused { get { return Time.timeScale == 0; } set { Time.timeScale = value ? 0 : 1; } }
 
     private int score;
     private int life;
     private bool isGameStarted = false;
     private bool isInitDone = false;
-    private bool isPaused = false;
     private bool isFirstFixedUpdateAfterStart = true;
 
 // Mark: Game controls
-    public void GamePauseResume() {
+    public void GamePauseResume(Action pauseDo = null, Action resumeDo = null) {
         if (this.isPaused) {
             GameResume();
+            if(resumeDo != null) { resumeDo(); }
         }else {
             GamePause();
+            if (pauseDo != null) { pauseDo(); }
         }
     }
 
     public void GamePause() {
         if (this.isPaused) { return; }
         this.isPaused = true;
-        Time.timeScale = 0;
         if (DelegateCenter.shared.OnGamePause != null) { DelegateCenter.shared.OnGamePause(); }
     }
 
     public void GameResume() {
         if (!this.isPaused) { return; }
         this.isPaused = false;
-        Time.timeScale = 1;
         if (DelegateCenter.shared.OnGameResume != null) { DelegateCenter.shared.OnGameResume(); }
     }
 
     public void GameRestart() {
         GameOver(false);
+        DelegateCenter.shared.LoadGameScene();
         GameStart();
     }
 
@@ -83,7 +86,6 @@ public class GameController : ControllerBase {
             if (DelegateCenter.shared.OnGameStart != null) { DelegateCenter.shared.OnGameStart(); }
         });
     }
-
 
     // Explicit overload for delegate
     public void GameOver() {
@@ -133,15 +135,19 @@ public class GameController : ControllerBase {
     }
 
     virtual protected void OnGameOver() {
-        this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score);
+        GameResume();
+        DelegateCenter.shared.SetStatsBarActive(false);
+        this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score, false, ()=> {
+            DelegateCenter.shared.SetStatsBarActive(true);
+        });
     }
 
     virtual protected void OnGamePause() {
-
+        DelegateCenter.shared.BlurBGM();
     }
 
     virtual protected void OnGameResume() {
-
+        DelegateCenter.shared.NormalizeBGM();
     }
 
     virtual protected void OnFirstUpdateAfterStart() {
@@ -186,6 +192,9 @@ public class GameController : ControllerBase {
         mc.GamePause += GamePause;
         mc.GameResume += GameResume;
         mc.GameOver += GameOver;
+        mc.GameStart += GameStartInitSafe;
+        Func<bool> IsGamePaused = () => { return this.isPaused; };
+        mc.IsGamePaused += IsGamePaused;
 
         lc.OnceOnDestroy(() => {
             mc.Score -= Score;
@@ -199,6 +208,8 @@ public class GameController : ControllerBase {
             mc.GamePause -= GamePause;
             mc.GameResume -= GameResume;
             mc.GameOver -= GameOver;
+            mc.GameStart -= GameStartInitSafe;
+            mc.IsGamePaused -= IsGamePaused;
         });
         
         lc.OnceOnFirstFixedUpdate(() => {

@@ -41,6 +41,7 @@ public class LifeCycleDelegates : MonoBehaviour {
     public Action OnDestroyDelegate;
     public Action OnRecycleDelegate;
     public Action OnFirstFixedUpdateDelegate;
+    [HideInInspector] public bool afterFirstFixedUpdate = false;
 
     private Poolable poolable = null;
     private List<SubInfo> removeTracker = new List<SubInfo>();
@@ -130,6 +131,7 @@ public class LifeCycleDelegates : MonoBehaviour {
 
     private IEnumerator WaitForFixedUpateRoutine() {
         yield return new WaitForFixedUpdate();
+        this.afterFirstFixedUpdate = true;
         OnFirstFixedUpdate();
     }
 

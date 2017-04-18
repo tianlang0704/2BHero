@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainMenu : MonoBehaviour {
-    public OptionMenu optionMenuPrefab;
+public class DialogMain : MonoBehaviour {
+    public DialogOption optionMenuPrefab;
 
     public void HandleStartGame() {
-        Debug.Log("GameStart pressed");
-        SceneController.shared.LoadGameScene();
-        GameController.shared.GameStart();
+        DelegateCenter.shared.LoadGameScene();
+        DelegateCenter.shared.GameStart();
     }
 
     public void HandleOption() {
-        Debug.Log("Option pressed");
         this.optionMenuPrefab.ClonePrefabAndShow(() => {
             this.gameObject.SetActive(true);
         });
@@ -20,7 +18,7 @@ public class MainMenu : MonoBehaviour {
     }
 
     public void HandleCredit() {
-        Debug.Log("Credit pressed");
+        DelegateCenter.shared.LoadCreditsScene();
     }
 
     public void HandleExit() {
