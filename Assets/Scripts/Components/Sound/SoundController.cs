@@ -38,6 +38,8 @@ public class SoundController : ControllerBase {
     public AudioMixer mainMixer;
     public AudioMixerSnapshot bluredBGM;
     public AudioMixerSnapshot normalBGM;
+    public AudioSource bgmSource;
+    public AudioSource uiSource;
     public float soundTransitionTime = 1f;
     public bool isMasterMuted { get { return GetMasterVolume() == -80; } set { SetMasterVolume(value ? -80 : 0); } }
     public bool isBGMMuted { get { return GetBGMVolume() == -80; } set { SetBGMVolume(value ? -80 : 0); } }
@@ -48,9 +50,6 @@ public class SoundController : ControllerBase {
     public void SetMasterVolume(float level) { this.mainMixer.SetFloat(this.masterVolumeParam, level); }
     public void SetBGMVolume(float level) { this.mainMixer.SetFloat(this.bgmVolumeParam, level); }
     public void SetSFXVolume(float level) { this.mainMixer.SetFloat(this.sfxVolumeParam, level); }
-
-    private AudioSource bgmSource;
-    private AudioSource uiSource;
 
     public void BlurBGM() {
         this.bluredBGM.TransitionTo(this.soundTransitionTime);
@@ -105,8 +104,6 @@ public class SoundController : ControllerBase {
             return;
         }
         DontDestroyOnLoad(this.gameObject);
-        this.bgmSource = this.GetComponent<AudioSource>();
-        this.uiSource = this.gameObject.AddComponent<AudioSource>();
         this.mainMixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
     }
 
