@@ -107,7 +107,7 @@ public class SoundController : ControllerBase {
         this.mainMixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         DelegateCenter dc = DelegateCenter.shared;
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();

@@ -161,7 +161,7 @@ public class DifficultyContoroller : ControllerBase {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         DelegateCenter mc = DelegateCenter.shared;
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();

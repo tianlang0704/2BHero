@@ -1,49 +1,29 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 public class Loader : MonoBehaviour {
-
     // TODO: Create a loadable base and put them all into a list
     // and remodel this class to facilitate more functions
-    public List<ControllerBase> controllerPrefabs = new List<ControllerBase>();
-    public ShootController shootControllerPrefab;
-    public ObjectPoolController poolControllerPrefab;
-    public PlayerController playerControllerPrefab;
-    public EnemyController enemyControllerPrefab;
-    public GameController gameControllerPrefab;
-    public DifficultyContoroller difficultyControllerPrefab;
-    public DelegateCenter delegateCenterPrefab;
-    public InputController inputControllerPrefab;
-    public SceneController sceneControllerPrefab;
-    public EffectController effectControllerPrefab;
-    public SoundController soundControllerPrefab;
-    public SettingsController settingsControllerPrefab;
+    public List<ControllerBase> prefabs = new List<ControllerBase>();
+    private List<ControllerBase> singletons = new List<ControllerBase>();
 
     void Awake() {
-		if (ShootController.shared == null)
-            Instantiate(this.shootControllerPrefab);
-        if (ObjectPoolController.shared == null)
-            Instantiate(this.poolControllerPrefab);
-        if (PlayerController.shared == null)
-            Instantiate(this.playerControllerPrefab);
-        if (EnemyController.shared == null)
-            Instantiate(this.enemyControllerPrefab);
-        if (GameController.shared == null)
-            Instantiate(this.gameControllerPrefab);
-        if (DifficultyContoroller.shared == null)
-            Instantiate(this.difficultyControllerPrefab);
-        if (DelegateCenter.shared == null)
-            Instantiate(this.delegateCenterPrefab);
-        if (InputController.shared == null)
-            Instantiate(this.inputControllerPrefab);
-        if (SceneController.shared == null)
-            Instantiate(this.sceneControllerPrefab);
-        if (EffectController.shared == null)
-            Instantiate(this.effectControllerPrefab);
-        if (SoundController.shared == null)
-            Instantiate(this.soundControllerPrefab);
-        if (SettingsController.shared == null)
-            Instantiate(this.settingsControllerPrefab);
+        this.prefabs.ForEach((controller) => {
+            FieldInfo fi = controller.GetType().GetField("shared");
+            if(fi == null) { throw new Exception("Type does not have a 'shared' variable" + controller); }
+            if(fi.GetValue(null) == null) {
+                this.singletons.Add(Instantiate(controller));
+            }
+        });
+
+        this.singletons.ForEach((controller)=> {
+            if (controller.isDelegatesInitialzed) { return; }
+            MethodInfo mi = controller.GetType().GetMethod("InitializeDelegates");
+            if(mi == null) { Debug.Log("Type does not have InitializeDelegates method: " + controller); return; }
+            mi.Invoke(controller, null);
+        });
     }
 }

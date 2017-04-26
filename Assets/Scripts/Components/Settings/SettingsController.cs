@@ -52,14 +52,14 @@ public class SettingsController : ControllerBase {
         }
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         DelegateCenter dc = DelegateCenter.shared;
         Func<bool> GetEnableTutorial = () => { return this.isTutorialEnabled; };
         Action<bool> SetEnableTutorial = (v) => { this.isTutorialEnabled = v; };
         dc.GetEnableTutorial += GetEnableTutorial;
         dc.SetEnableTutorial += SetEnableTutorial;
-        this.lifeCycle.OnceOnDestroy(() => {
+        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
             dc.GetEnableTutorial -= GetEnableTutorial;
             dc.SetEnableTutorial -= SetEnableTutorial;
         });

@@ -6,15 +6,15 @@ using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(LifeCycleDelegates))]
 public class ControllerBase : MonoBehaviour {
-    protected LifeCycleDelegates lifeCycle;
+    [HideInInspector] public bool isDelegatesInitialzed = false;
 
-    virtual protected void Awake() {
-        this.lifeCycle = this.GetComponent<LifeCycleDelegates>();
+    protected virtual void Awake() {
     }
 
-    virtual protected void Start() {
-        InitializeDelegates();
+    protected virtual void Start() {
     }
 
-    virtual protected void InitializeDelegates() { }
+    public virtual void InitializeDelegates() {
+        this.isDelegatesInitialzed = true;
+    }
 }

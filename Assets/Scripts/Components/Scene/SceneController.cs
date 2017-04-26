@@ -39,8 +39,9 @@ public class SceneController : ControllerBase {
     }
 
     private void InitSafeBGMForScene(string sceneName) {
-        if (!this.lifeCycle.isAfterFirstFixedUpdate) {
-            this.lifeCycle.OnceOnFirstFixedUpdate(() => {
+        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
+        if (!lc.isAfterFirstUpdate) {
+            lc.OnceOnFirstdUpdate(() => {
                 DelegateCenter.shared.PlayBGMForSetting(sceneName);
             });
         }else {
@@ -63,12 +64,12 @@ public class SceneController : ControllerBase {
 
         // Setting OnSceneLoaded delegate in awake for getting the first call
         SceneManager.sceneLoaded += OnSceneLoaded;
-        this.lifeCycle.OnceOnDestroy(() => {
+        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
             SceneManager.sceneLoaded -= OnSceneLoaded;
         });
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
         DelegateCenter mc = DelegateCenter.shared;

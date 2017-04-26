@@ -215,19 +215,21 @@ public class ObjectPoolController: ControllerBase {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         DelegateCenter mc = DelegateCenter.shared;
         mc.Recycle += Recycle;
-        this.lifeCycle.OnceOnDestroy(() => { mc.Recycle -= Recycle; });
         mc.RecycleWithDelay += Recycle;
-        this.lifeCycle.OnceOnDestroy(() => { mc.RecycleWithDelay -= Recycle; });
         mc.RecycleAll += RecycleAll;
-        this.lifeCycle.OnceOnDestroy(() => { mc.RecycleAll -= RecycleAll; });
         mc.GetPoolable += GetPoolable;
-        this.lifeCycle.OnceOnDestroy(() => { mc.GetPoolable -= GetPoolable; });
         mc.GetPoolableWithName += GetPoolable;
-        this.lifeCycle.OnceOnDestroy(() => { mc.GetPoolableWithName -= GetPoolable; });
+        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
+            mc.Recycle -= Recycle;
+            mc.RecycleWithDelay -= Recycle;
+            mc.RecycleAll -= RecycleAll;
+            mc.GetPoolable -= GetPoolable;
+            mc.GetPoolableWithName -= GetPoolable;
+        });
     }
     // End: Singleton initialization
 }

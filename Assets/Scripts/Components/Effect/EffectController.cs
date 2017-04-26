@@ -25,7 +25,7 @@ public class EffectController: ControllerBase {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
 
     }

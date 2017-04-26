@@ -154,7 +154,7 @@ public class EnemyController : ControllerBase {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    override protected void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         DelegateCenter mc = DelegateCenter.shared;
         // Enemy parameter settings
@@ -173,7 +173,7 @@ public class EnemyController : ControllerBase {
         mc.StopSpawningEnemy += StopSpawning;
         mc.ClearAllEnemies += ClearAllEnemies;
         
-        this.lifeCycle.OnceOnDestroy(() => {
+        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
             mc.SetEnemyDropSpeed -= SetEnemyDropSpeed;
             mc.SetEnemyMoveSpeed -= SetEnemyMoveSpeed;
             mc.SetEnemySpawnInterval -= SetEnemySpawnInterval;

@@ -65,7 +65,7 @@ public class GameController : ControllerBase {
 
     public void GameStartInitSafe() {
         if (!this.isInitDone) {
-            this.lifeCycle.OnceOnFirstFixedUpdate(() => {
+            this.GetComponent<LifeCycleDelegates>().OnceOnFirstFixedUpdate(() => {
                 GameStart();
             });
         } else {
@@ -176,7 +176,7 @@ public class GameController : ControllerBase {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    protected override void InitializeDelegates() {
+    public override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
         DelegateCenter mc = DelegateCenter.shared;
