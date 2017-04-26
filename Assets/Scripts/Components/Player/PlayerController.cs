@@ -14,18 +14,19 @@ public class PlayerController : ControllerBase {
     private int currentPosition = 0;
     private List<GameObject> positionMarks = new List<GameObject>();
     private Player player;
+    private InputController inputCont;
 
 	private void Update () {
-        InputController.shared.PlayerMoveUp(()=> {
-            if (DelegateCenter.shared.IsGamePaused()) { return; }
+        this.inputCont.PlayerMoveUp(()=> {
+            if (Loader.shared.GetSingleton<DelegateCenter>().IsGamePaused()) { return; }
             if (this.currentPosition < this.maxPosition) {
                 this.currentPosition += 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
             }
         });
 
-        InputController.shared.PlayerMoveDown(() => {
-            if (DelegateCenter.shared.IsGamePaused()) { return; }
+        this.inputCont.PlayerMoveDown(() => {
+            if (Loader.shared.GetSingleton<DelegateCenter>().IsGamePaused()) { return; }
             if (this.currentPosition > 0) {
                 this.currentPosition -= 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -83,17 +84,14 @@ public class PlayerController : ControllerBase {
 // End: Scene initialization
 
 // Mark: Singleton initialization
-    public static PlayerController shared = null;
     override protected void Awake() {
         base.Awake();
-        if (PlayerController.shared == null) {
-            PlayerController.shared = this;
-        }else if (PlayerController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         this.currentPosition = this.defaultPosition;
     }
-// End: Singleton initialization
+
+    protected override void Start() {
+        base.Start();
+        this.inputCont = Loader.shared.GetSingleton<InputController>();
+    }
+    // End: Singleton initialization
 }

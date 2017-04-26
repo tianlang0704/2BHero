@@ -50,7 +50,7 @@ public class EnemyController : ControllerBase {
 
     public void ClearAllEnemies() {
         this.enemyPrefabs.ForEach((Enemy e) => {
-            DelegateCenter.shared.RecycleAll(e.GetComponent<Poolable>());
+            Loader.shared.GetSingleton<DelegateCenter>().RecycleAll(e.GetComponent<Poolable>());
         });
     }
 
@@ -75,7 +75,7 @@ public class EnemyController : ControllerBase {
 
     public void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
         Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = DelegateCenter.shared.GetPoolable(
+        Railable enemyOnRail = Loader.shared.GetSingleton<DelegateCenter>().GetPoolable(
             enemyPoolable,
             spawnMark.transform.position,
             spawnMark.transform.rotation)
@@ -142,21 +142,9 @@ public class EnemyController : ControllerBase {
 // End: Scene initialization
 
 // Mark: Singleton initialization
-    public static EnemyController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (EnemyController.shared == null) {
-            EnemyController.shared = this;
-        } else if (EnemyController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
     public override void InitializeDelegates() {
         base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         // Enemy parameter settings
         Action<float> SetEnemyDropSpeed = (value)=> { this.dropSpeed = value; };
         mc.SetEnemyDropSpeed += SetEnemyDropSpeed;

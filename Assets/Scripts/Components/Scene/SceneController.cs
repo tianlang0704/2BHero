@@ -32,36 +32,27 @@ public class SceneController : ControllerBase {
         InitSafeBGMForScene(scene.name);
         // Not using delegate because setup needs to be in Awake,
         // which is earlier than delegate setup.
-        ObjectPoolController.shared.SetupPoolControllerForScene();
-        EnemyController.shared.SetupEnemyControllerForScene();
-        PlayerController.shared.SetupPlayerControllerForScene();
-        ShootController.shared.SetupShootControllerForScene();
+        Loader.shared.GetSingleton<ObjectPoolController>().SetupPoolControllerForScene();
+        Loader.shared.GetSingleton<EnemyController>().SetupEnemyControllerForScene();
+        Loader.shared.GetSingleton<PlayerController>().SetupPlayerControllerForScene();
+        Loader.shared.GetSingleton<ShootController>().SetupShootControllerForScene();
     }
 
     private void InitSafeBGMForScene(string sceneName) {
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         if (!lc.isAfterFirstUpdate) {
             lc.OnceOnFirstdUpdate(() => {
-                DelegateCenter.shared.PlayBGMForSetting(sceneName);
+                Loader.shared.GetSingleton<DelegateCenter>().PlayBGMForSetting(sceneName);
             });
         }else {
-            DelegateCenter.shared.StopBGM();
-            DelegateCenter.shared.PlayBGMForSetting(sceneName);
+            Loader.shared.GetSingleton<DelegateCenter>().StopBGM();
+            Loader.shared.GetSingleton<DelegateCenter>().PlayBGMForSetting(sceneName);
         }
     }
 
 // Mark: Singleton initialization
-    public static SceneController shared = null;
     override protected void Awake() {
         base.Awake();
-        if (SceneController.shared == null) {
-            SceneController.shared = this;
-        } else if (SceneController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-
         // Setting OnSceneLoaded delegate in awake for getting the first call
         SceneManager.sceneLoaded += OnSceneLoaded;
         this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
@@ -72,7 +63,7 @@ public class SceneController : ControllerBase {
     public override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         mc.LoadGameScene += LoadGameScene;
         mc.LoadMenuScene += LoadMenuScene;

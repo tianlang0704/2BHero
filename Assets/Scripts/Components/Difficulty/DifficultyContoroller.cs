@@ -139,7 +139,7 @@ public class DifficultyContoroller : ControllerBase {
     }
 
     private void UpdateEnemyDifficulty(int wave) {
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         mc.SetEnemyDropSpeed(GetMoveSpeedFactor(wave));
         mc.SetEnemyMoveSpeed(GetMoveSpeedFactor(wave));
         mc.SetEnemySpawnInterval(GetSpawnIntervalFactor(wave));
@@ -149,21 +149,9 @@ public class DifficultyContoroller : ControllerBase {
 // Mark: Difficulty loop functions
 
 // Mark: Singleton initialization
-    public static DifficultyContoroller shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (DifficultyContoroller.shared == null) {
-            DifficultyContoroller.shared = this;
-        } else if (DifficultyContoroller.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
     public override void InitializeDelegates() {
         base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         mc.StartDifficultLoop += StartDifficultLoop;
         mc.StopDifficultLoop += StopDifficultLoop;

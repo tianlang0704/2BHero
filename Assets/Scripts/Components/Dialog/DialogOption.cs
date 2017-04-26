@@ -10,22 +10,22 @@ public class DialogOption : PopupDialogBase {
     public AudioClip buttonSound;
 
     public void BGMHandler(bool b) {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
-        DelegateCenter.shared.SetBGMMuted(!b);
+        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
+        Loader.shared.GetSingleton<DelegateCenter>().SetBGMMuted(!b);
     }
 
     public void SFXHandler(bool b) {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
-        DelegateCenter.shared.SetSFXMuted(!b);
+        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
+        Loader.shared.GetSingleton<DelegateCenter>().SetSFXMuted(!b);
     }
 
     public void CloseHandler() {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
+        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
         CloseMenu();
     }
 
     protected virtual void Awake() {
-        this.musicToggle.isOn = !DelegateCenter.shared.IsBGMMuted();
-        this.sfxToggle.isOn = !DelegateCenter.shared.IsSFXMuted();
+        this.musicToggle.isOn = !Loader.shared.GetSingleton<DelegateCenter>().IsBGMMuted();
+        this.sfxToggle.isOn = !Loader.shared.GetSingleton<DelegateCenter>().IsSFXMuted();
     }
 }

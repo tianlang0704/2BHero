@@ -4,12 +4,13 @@ using UnityEngine;
 
 [RequireComponent(typeof(LifeCycleDelegates))]
 public class DialogTutorial : PopupDialogBase {
+    private InputController inputCont;
 
     private void Awake() {
         this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
-            if (DelegateCenter.shared.GetEnableTutorial()) {
+            if (Loader.shared.GetSingleton<DelegateCenter>().GetEnableTutorial()) {
                 this.gameObject.SetActive(true);
-                DelegateCenter.shared.GamePause();
+                Loader.shared.GetSingleton<DelegateCenter>().GamePause();
             }else {
                 this.gameObject.SetActive(false);
             }
@@ -17,10 +18,14 @@ public class DialogTutorial : PopupDialogBase {
     }
 
     private void Update() {
-        InputController.shared.VariableDurationShoot((a, b) => {
+        this.inputCont.VariableDurationShoot((a, b) => {
             this.gameObject.SetActive(false);
-            DelegateCenter.shared.SetEnableTutorial(false);
-            DelegateCenter.shared.GameResume();
+            Loader.shared.GetSingleton<DelegateCenter>().SetEnableTutorial(false);
+            Loader.shared.GetSingleton<DelegateCenter>().GameResume();
         });
+    }
+
+    private void Start() {
+        this.inputCont = Loader.shared.GetSingleton<InputController>();
     }
 }

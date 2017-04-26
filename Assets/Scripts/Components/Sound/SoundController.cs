@@ -94,22 +94,14 @@ public class SoundController : ControllerBase {
     }
 
 // Mark: Singleton initialization
-    public static SoundController shared = null;
     override protected void Awake() {
         base.Awake();
-        if (SoundController.shared == null) {
-            SoundController.shared = this;
-        } else if (SoundController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         this.mainMixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
     }
 
     public override void InitializeDelegates() {
         base.InitializeDelegates();
-        DelegateCenter dc = DelegateCenter.shared;
+        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         dc.SetMasterVolume += SetMasterVolume;
         dc.SetBGMVolume += SetBGMVolume;

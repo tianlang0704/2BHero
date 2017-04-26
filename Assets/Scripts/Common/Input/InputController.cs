@@ -157,16 +157,8 @@ public class InputController : ControllerBase {
 // End: Swipe functions
 
 // Mark: Singleton initialization
-    public static InputController shared = null;
     override protected void Awake() {
         base.Awake();
-        if (InputController.shared == null) {
-            InputController.shared = this;
-        } else if (InputController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         this.minSqrSwipeDist = this.minSwipeDist * this.minSwipeDist;
         this.detectableAreaSize = Screen.height * 0.9f;
     }

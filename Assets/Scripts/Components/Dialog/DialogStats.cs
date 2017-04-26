@@ -21,10 +21,10 @@ public class DialogStats : MonoBehaviour {
 
     public void HandlePause() {
         if(this.pauseMenu != null) { this.pauseMenu.CloseMenu(); return; }
-        DelegateCenter.shared.GamePause();
+        Loader.shared.GetSingleton<DelegateCenter>().GamePause();
         this.pauseMenu = Instantiate(this.pauseMenuPrefab);
         this.pauseMenu.Show(() => {
-            DelegateCenter.shared.GameResume();
+            Loader.shared.GetSingleton<DelegateCenter>().GameResume();
             this.pauseMenu = null;
         });
     }
@@ -40,11 +40,11 @@ public class DialogStats : MonoBehaviour {
     }
 
     public void HandleRestart() {
-        DelegateCenter.shared.GameRestart();
+        Loader.shared.GetSingleton<DelegateCenter>().GameRestart();
     }
 
     public void HandleStop() {
-        DelegateCenter.shared.GameOver();
+        Loader.shared.GetSingleton<DelegateCenter>().GameOver();
     }
 
     private void OnScoreChange(int score) {
@@ -60,7 +60,7 @@ public class DialogStats : MonoBehaviour {
     }
 
     private void Start() {
-        DelegateCenter dc = DelegateCenter.shared;
+        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
         dc.OnScoreChange += OnScoreChange;
         dc.OnLifeChange += OnLifeChange;
         dc.OnBulletCountChange += OnBulletCountChange;

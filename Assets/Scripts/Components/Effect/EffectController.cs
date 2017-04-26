@@ -11,23 +11,4 @@ public class EffectController: ControllerBase {
     public void ShowScoreForObj(GameObject go, int score) {
 
     }
-
-// Mark: Singleton initialization
-    public static EffectController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (EffectController.shared == null) {
-            EffectController.shared = this;
-        } else if (EffectController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
-    public override void InitializeDelegates() {
-        base.InitializeDelegates();
-
-    }
-// End: Singleton initialization
 }

@@ -9,7 +9,7 @@ public class UIPressSound : MonoBehaviour {
 
     void Start () {
         this.GetComponent<Button>().onClick.AddListener(() => {
-            DelegateCenter.shared.PlayUIOneShot(this.pressSound);
+            Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.pressSound);
         }); ;
 	}
 }

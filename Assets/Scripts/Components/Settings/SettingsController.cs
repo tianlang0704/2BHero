@@ -36,16 +36,8 @@ public class SettingsController : ControllerBase {
     }
 
 // Mark: Singleton initialization
-    public static SettingsController shared = null;
     protected override void Awake() {
         base.Awake();
-        if (SettingsController.shared == null) {
-            SettingsController.shared = this;
-        } else if (SettingsController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         if (this.isFirstRun) {
             InitSettings();
             this.isFirstRun = false;
@@ -54,7 +46,7 @@ public class SettingsController : ControllerBase {
 
     public override void InitializeDelegates() {
         base.InitializeDelegates();
-        DelegateCenter dc = DelegateCenter.shared;
+        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
         Func<bool> GetEnableTutorial = () => { return this.isTutorialEnabled; };
         Action<bool> SetEnableTutorial = (v) => { this.isTutorialEnabled = v; };
         dc.GetEnableTutorial += GetEnableTutorial;

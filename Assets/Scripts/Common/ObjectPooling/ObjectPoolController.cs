@@ -203,21 +203,9 @@ public class ObjectPoolController: ControllerBase {
 // End: Scene initialization
 
 // Mark: Singleton initialization
-    public static ObjectPoolController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if(ObjectPoolController.shared == null) {
-            ObjectPoolController.shared = this;
-        }else if(ObjectPoolController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
     public override void InitializeDelegates() {
         base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         mc.Recycle += Recycle;
         mc.RecycleWithDelay += Recycle;
         mc.RecycleAll += RecycleAll;

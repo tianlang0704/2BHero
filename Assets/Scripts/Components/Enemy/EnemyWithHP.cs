@@ -73,7 +73,7 @@ public class EnemyWithHP : Enemy {
         this.GetComponent<Animator>().SetTrigger("hit");
         this.audioSource.PlayOneShot(this.hitSounds.GetRandom(), 0.9f);
         if (!this.callOnDie && this.hp <= 0) {
-            DelegateCenter.shared.Score(this.score);
+            Loader.shared.GetSingleton<DelegateCenter>().Score(this.score);
             this.callOnDie = true;
             this.killer = dmger;
         }

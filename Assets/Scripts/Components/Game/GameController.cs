@@ -48,18 +48,18 @@ public class GameController : ControllerBase {
     public void GamePause() {
         if (this.isPaused) { return; }
         this.isPaused = true;
-        if (DelegateCenter.shared.OnGamePause != null) { DelegateCenter.shared.OnGamePause(); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnGamePause != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGamePause(); }
     }
 
     public void GameResume() {
         if (!this.isPaused) { return; }
         this.isPaused = false;
-        if (DelegateCenter.shared.OnGameResume != null) { DelegateCenter.shared.OnGameResume(); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnGameResume != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGameResume(); }
     }
 
     public void GameRestart() {
         GameOver(false);
-        DelegateCenter.shared.LoadGameScene();
+        Loader.shared.GetSingleton<DelegateCenter>().LoadGameScene();
         GameStart();
     }
 
@@ -80,10 +80,10 @@ public class GameController : ControllerBase {
         ResetScore();
         GameResume();
 
-        DelegateCenter.shared.StartDifficultLoop(() => {
+        Loader.shared.GetSingleton<DelegateCenter>().StartDifficultLoop(() => {
             this.isGameStarted = true;
-            DelegateCenter.shared.StartSpawningEnemy();
-            if (DelegateCenter.shared.OnGameStart != null) { DelegateCenter.shared.OnGameStart(); }
+            Loader.shared.GetSingleton<DelegateCenter>().StartSpawningEnemy();
+            if (Loader.shared.GetSingleton<DelegateCenter>().OnGameStart != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGameStart(); }
         });
     }
 
@@ -95,10 +95,10 @@ public class GameController : ControllerBase {
     public void GameOver(bool callOnGameover) {
         if (!this.isGameStarted) { return; }
         this.isGameStarted = false;
-        DelegateCenter.shared.StopDifficultLoop();
-        DelegateCenter.shared.StopSpawningEnemy();
-        DelegateCenter.shared.ClearAllEnemies();
-        if(DelegateCenter.shared.OnGameOver != null && callOnGameover) { DelegateCenter.shared.OnGameOver(); }
+        Loader.shared.GetSingleton<DelegateCenter>().StopDifficultLoop();
+        Loader.shared.GetSingleton<DelegateCenter>().StopSpawningEnemy();
+        Loader.shared.GetSingleton<DelegateCenter>().ClearAllEnemies();
+        if(Loader.shared.GetSingleton<DelegateCenter>().OnGameOver != null && callOnGameover) { Loader.shared.GetSingleton<DelegateCenter>().OnGameOver(); }
         
     }
 // End: Game controls
@@ -106,12 +106,12 @@ public class GameController : ControllerBase {
 // Mark: Game stats
     virtual protected void Score(int score) {
         this.score += score;
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
     }
 
     virtual protected void DeductLife(int amount) {
         this.life -= amount;
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
         if (this.life <= 0) {
             GameOver();
         }
@@ -119,12 +119,12 @@ public class GameController : ControllerBase {
 
     public void ResetScore() {
         this.score = 0;
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
     }
 
     public void ResetLife() {
         this.life = this.defaultLife;
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
         
     }
 // End: Game stats
@@ -136,23 +136,23 @@ public class GameController : ControllerBase {
 
     virtual protected void OnGameOver() {
         GameResume();
-        DelegateCenter.shared.SetStatsBarActive(false);
+        Loader.shared.GetSingleton<DelegateCenter>().SetStatsBarActive(false);
         this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score, false, ()=> {
-            DelegateCenter.shared.SetStatsBarActive(true);
+            Loader.shared.GetSingleton<DelegateCenter>().SetStatsBarActive(true);
         });
     }
 
     virtual protected void OnGamePause() {
-        DelegateCenter.shared.BlurBGM();
+        Loader.shared.GetSingleton<DelegateCenter>().BlurBGM();
     }
 
     virtual protected void OnGameResume() {
-        DelegateCenter.shared.NormalizeBGM();
+        Loader.shared.GetSingleton<DelegateCenter>().NormalizeBGM();
     }
 
     virtual protected void OnFirstUpdateAfterStart() {
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
+        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
     }
 // End: Game events
 
@@ -164,22 +164,10 @@ public class GameController : ControllerBase {
     }
 
 // Mark: Singleton initialization
-    public static GameController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (GameController.shared == null) {
-            GameController.shared = this;
-        } else if (GameController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
     public override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         mc.Score += Score;
         mc.DeductLife += DeductLife;

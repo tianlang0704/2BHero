@@ -33,8 +33,8 @@ public class Shooter : MonoBehaviour {
         get { return _bulletCount; }
         set {
             _bulletCount = value;
-            if (DelegateCenter.shared.OnBulletCountChange != null) {
-                DelegateCenter.shared.OnBulletCountChange(this);
+            if (Loader.shared.GetSingleton<DelegateCenter>().OnBulletCountChange != null) {
+                Loader.shared.GetSingleton<DelegateCenter>().OnBulletCountChange(this);
             }
         }
     }
@@ -77,7 +77,7 @@ public class Shooter : MonoBehaviour {
     public void DoShoot(float factor) {
         this.audioSource.PlayOneShot(this.shootSounds.GetRandom(), 0.7f);
         float horizontalForce = this.forceMin + this.forceDelta * factor;
-        Rigidbody2D newBulletRb2d = DelegateCenter.shared.GetPoolable(
+        Rigidbody2D newBulletRb2d = Loader.shared.GetSingleton<DelegateCenter>().GetPoolable(
             this.bullet,
             this.spawnMark.position,
             this.gameObject.transform.rotation)
@@ -131,7 +131,7 @@ public class Shooter : MonoBehaviour {
     private void Start() {
         // Initialize delegates
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        DelegateCenter dc = DelegateCenter.shared;
+        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
         dc.OnGameResume += EnableShoot;
         dc.OnGamePause += DisableShoot;
         lc.OnceOnDestroy(() => {

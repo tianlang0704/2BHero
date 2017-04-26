@@ -13,17 +13,4 @@ using UnityEngine;
 // They don't have to firmly depending on each other.
 public partial class DelegateCenter : ControllerBase {
 
-// Mark: Singleton initialization
-    public static DelegateCenter shared = null;
-    protected override void Awake() {
-        base.Awake();
-        if (DelegateCenter.shared == null) {
-            DelegateCenter.shared = this;
-        } else if (DelegateCenter.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-// End: Singleton initialization
 }

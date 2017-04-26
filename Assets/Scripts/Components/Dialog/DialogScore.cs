@@ -29,7 +29,7 @@ public class DialogScore : PopupDialogBase {
     }
 
     public virtual void Show(bool isHighScore = false, Action closeAction = null) {
-        DelegateCenter.shared.BlurBGM();
+        Loader.shared.GetSingleton<DelegateCenter>().BlurBGM();
         if (isHighScore) {
             this.GetComponent<AudioSource>().PlayOneShot(this.highScoreSound, this.soundVolume);
         }else {
@@ -41,17 +41,17 @@ public class DialogScore : PopupDialogBase {
 
     public override void CloseMenu() {
         base.CloseMenu();
-        DelegateCenter.shared.NormalizeBGM();
+        Loader.shared.GetSingleton<DelegateCenter>().NormalizeBGM();
     }
 
     public void HandleMenu() {
         CloseMenu();
-        DelegateCenter.shared.LoadMenuScene();
+        Loader.shared.GetSingleton<DelegateCenter>().LoadMenuScene();
     }
 
     public void HandlePlay() {
         CloseMenu();
-        DelegateCenter.shared.GameRestart();
+        Loader.shared.GetSingleton<DelegateCenter>().GameRestart();
     }
 
 

@@ -6,8 +6,8 @@ public class DialogMain : MonoBehaviour {
     public DialogOption optionMenuPrefab;
 
     public void HandleStartGame() {
-        DelegateCenter.shared.LoadGameScene();
-        DelegateCenter.shared.GameStart();
+        Loader.shared.GetSingleton<DelegateCenter>().LoadGameScene();
+        Loader.shared.GetSingleton<DelegateCenter>().GameStart();
     }
 
     public void HandleOption() {
@@ -18,7 +18,7 @@ public class DialogMain : MonoBehaviour {
     }
 
     public void HandleCredit() {
-        DelegateCenter.shared.LoadCreditsScene();
+        Loader.shared.GetSingleton<DelegateCenter>().LoadCreditsScene();
     }
 
     public void HandleExit() {

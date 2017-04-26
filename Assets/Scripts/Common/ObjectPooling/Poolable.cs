@@ -15,11 +15,11 @@ public class Poolable: MonoBehaviour {
     private bool firstFrameAfterEnable;
 
     public void Recycle() {
-        DelegateCenter.shared.Recycle(this);
+        Loader.shared.GetSingleton<DelegateCenter>().Recycle(this);
     }
 
     public void Recycle(float t) {
-        DelegateCenter.shared.RecycleWithDelay(this, t);
+        Loader.shared.GetSingleton<DelegateCenter>().RecycleWithDelay(this, t);
     }
 
     private void Awake() {
