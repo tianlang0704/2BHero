@@ -5,23 +5,6 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
-public partial class DelegateCenter {
-    public Action<float> SetMasterVolume;
-    public Action<float> SetBGMVolume;
-    public Action<float> SetSFXVolume;
-    public Action<bool> SetMasterMuted;
-    public Action<bool> SetBGMMuted;
-    public Action<bool> SetSFXMuted;
-    public Func<bool> IsMasterMuted;
-    public Func<bool> IsBGMMuted;
-    public Func<bool> IsSFXMuted;
-    public Action BlurBGM;
-    public Action NormalizeBGM;
-    public Action<string> PlayBGMForSetting;
-    public Action StopBGM;
-    public Action<AudioClip> PlayUIOneShot;
-}
-
 [Serializable]
 public class BGMSettings {
     public string settingName;
@@ -31,7 +14,7 @@ public class BGMSettings {
 }
 
 [RequireComponent(typeof(AudioSource))]
-public class SoundController : ControllerBase {
+public class SoundController : BComponentBase {
     public string masterVolumeParam = "MainVolume";
     public string bgmVolumeParam = "MusicVolume";
     public string sfxVolumeParam = "SFXVolume";
@@ -87,6 +70,10 @@ public class SoundController : ControllerBase {
         PlayBGMForSetting(this.currentSettingName);
     }
 
+    public void PlayUIOneShot(AudioClip clip) {
+        this.uiSource.PlayOneShot(clip);
+    }
+
 // End: BGM functions
 
     protected virtual void Update() {
@@ -94,60 +81,9 @@ public class SoundController : ControllerBase {
     }
 
 // Mark: Singleton initialization
-    public static SoundController shared = null;
     override protected void Awake() {
         base.Awake();
-        if (SoundController.shared == null) {
-            SoundController.shared = this;
-        } else if (SoundController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         this.mainMixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
-    }
-
-    protected override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter dc = DelegateCenter.shared;
-        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        dc.SetMasterVolume += SetMasterVolume;
-        dc.SetBGMVolume += SetBGMVolume;
-        dc.SetSFXVolume += SetSFXVolume;
-        Action<bool> SetMasterMuted = (v) => { this.isMasterMuted = v; };
-        Action<bool> SetBGMMuted = (v) => { this.isBGMMuted = v; };
-        Action<bool> SetSFXMuted = (v) => { this.isSFXMuted = v; };
-        Func<bool> IsMasterMuted = () => { return this.isMasterMuted; };
-        Func<bool> IsBGMMuted = () => { return this.isBGMMuted; };
-        Func<bool> IsSFXMuted = () => { return this.isSFXMuted; };
-        Action<AudioClip> PlayUIOneShot = (clip) => { this.uiSource.PlayOneShot(clip); };
-        dc.SetMasterMuted += SetMasterMuted;
-        dc.SetBGMMuted += SetBGMMuted;
-        dc.SetSFXMuted += SetSFXMuted;
-        dc.IsMasterMuted += IsMasterMuted;
-        dc.IsBGMMuted += IsBGMMuted;
-        dc.IsSFXMuted += IsSFXMuted;
-        dc.BlurBGM += BlurBGM;
-        dc.NormalizeBGM += NormalizeBGM;
-        dc.PlayBGMForSetting += PlayBGMForSetting;
-        dc.StopBGM += StopBGM;
-        dc.PlayUIOneShot += PlayUIOneShot;
-        lc.OnceOnDestroy(() => {
-            dc.SetMasterVolume -= SetMasterVolume;
-            dc.SetBGMVolume -= SetBGMVolume;
-            dc.SetSFXVolume -= SetSFXVolume;
-            dc.SetMasterMuted -= SetMasterMuted;
-            dc.SetBGMMuted -= SetBGMMuted;
-            dc.SetSFXMuted -= SetSFXMuted;
-            dc.IsMasterMuted -= IsMasterMuted;
-            dc.IsBGMMuted -= IsBGMMuted;
-            dc.IsSFXMuted -= IsSFXMuted;
-            dc.BlurBGM -= BlurBGM;
-            dc.NormalizeBGM -= NormalizeBGM;
-            dc.PlayBGMForSetting -= PlayBGMForSetting;
-            dc.StopBGM -= StopBGM;
-            dc.PlayUIOneShot -= PlayUIOneShot;
-        });
     }
 // End: Singleton initialization
 }

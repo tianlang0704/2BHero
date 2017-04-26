@@ -10,22 +10,36 @@ public class DialogOption : PopupDialogBase {
     public AudioClip buttonSound;
 
     public void BGMHandler(bool b) {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
-        DelegateCenter.shared.SetBGMMuted(!b);
+        base.GetDep<SoundController>().PlayUIOneShot(this.buttonSound);
+        base.GetDep<SoundController>().isBGMMuted = !b;
     }
 
     public void SFXHandler(bool b) {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
-        DelegateCenter.shared.SetSFXMuted(!b);
+        base.GetDep<SoundController>().PlayUIOneShot(this.buttonSound);
+        base.GetDep<SoundController>().isSFXMuted = !b;
     }
 
     public void CloseHandler() {
-        DelegateCenter.shared.PlayUIOneShot(this.buttonSound);
+        base.GetDep<SoundController>().PlayUIOneShot(this.buttonSound);
         CloseMenu();
     }
 
-    protected virtual void Awake() {
-        this.musicToggle.isOn = !DelegateCenter.shared.IsBGMMuted();
-        this.sfxToggle.isOn = !DelegateCenter.shared.IsSFXMuted();
+    protected override void Start() {
+        base.Start();
+        this.musicToggle.isOn = !base.GetDep<SoundController>().isBGMMuted;
+        this.sfxToggle.isOn = !base.GetDep<SoundController>().isSFXMuted;
+    }
+
+    protected override void Awake() {
+        base.Awake();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
+    }
+
+    public void InjectDependencies(
+        SoundController sc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<SoundController>(sc);
+        base.isInjected = true;
     }
 }

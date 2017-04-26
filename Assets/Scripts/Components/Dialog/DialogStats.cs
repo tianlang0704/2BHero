@@ -9,7 +9,7 @@ public partial class DelegateCenter {
 }
 
 [RequireComponent(typeof(LifeCycleDelegates))]
-public class DialogStats : MonoBehaviour {
+public class DialogStats : BComponentBase {
     public DialogOption optionMenuPrefab;
     public DialogPause pauseMenuPrefab;
     public Text scoreText;
@@ -21,10 +21,10 @@ public class DialogStats : MonoBehaviour {
 
     public void HandlePause() {
         if(this.pauseMenu != null) { this.pauseMenu.CloseMenu(); return; }
-        DelegateCenter.shared.GamePause();
+        base.GetDep<GameController>().GamePause();
         this.pauseMenu = Instantiate(this.pauseMenuPrefab);
         this.pauseMenu.Show(() => {
-            DelegateCenter.shared.GameResume();
+            base.GetDep<GameController>().GameResume();
             this.pauseMenu = null;
         });
     }
@@ -40,11 +40,11 @@ public class DialogStats : MonoBehaviour {
     }
 
     public void HandleRestart() {
-        DelegateCenter.shared.GameRestart();
+        base.GetDep<GameController>().GameRestart();
     }
 
     public void HandleStop() {
-        DelegateCenter.shared.GameOver();
+        base.GetDep<GameController>().GameOver();
     }
 
     private void OnScoreChange(int score) {
@@ -59,8 +59,8 @@ public class DialogStats : MonoBehaviour {
         this.bulletText.text = s.bulletCount.ToString();
     }
 
-    private void Start() {
-        DelegateCenter dc = DelegateCenter.shared;
+    protected override void Start() {
+        DelegateCenter dc = base.GetDep<DelegateCenter>();
         dc.OnScoreChange += OnScoreChange;
         dc.OnLifeChange += OnLifeChange;
         dc.OnBulletCountChange += OnBulletCountChange;
@@ -72,5 +72,22 @@ public class DialogStats : MonoBehaviour {
             dc.OnBulletCountChange -= OnBulletCountChange;
             dc.SetStatsBarActive -= SetStatsBarActive;
         });
+    }
+
+    protected override void Awake() {
+        base.Awake();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
+    }
+
+    public void InjectDependencies(
+        SoundController sc,
+        GameController gc,
+        DelegateCenter dc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<SoundController>(sc);
+        base.AddDep<GameController>(gc);
+        base.AddDep<DelegateCenter>(dc);
+        base.isInjected = true;
     }
 }

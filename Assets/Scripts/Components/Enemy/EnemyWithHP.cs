@@ -73,7 +73,7 @@ public class EnemyWithHP : Enemy {
         this.GetComponent<Animator>().SetTrigger("hit");
         this.audioSource.PlayOneShot(this.hitSounds.GetRandom(), 0.9f);
         if (!this.callOnDie && this.hp <= 0) {
-            DelegateCenter.shared.Score(this.score);
+            base.GetDep<GameController>().Score(this.score);
             this.callOnDie = true;
             this.killer = dmger;
         }
@@ -105,10 +105,19 @@ public class EnemyWithHP : Enemy {
     protected override void OnRecycle() {
         base.OnRecycle();
     }
+// End: Enemy Events
 
     protected override void Awake() {
         base.Awake();
         this.audioSource = this.GetComponent<AudioSource>();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
     }
-    // Mark: Enemy Events
+
+    public void InjectDependencies(
+        GameController gc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<GameController>(gc);
+        base.isInjected = true;
+    }
 }

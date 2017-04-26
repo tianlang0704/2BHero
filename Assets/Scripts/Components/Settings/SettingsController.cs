@@ -3,12 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class DelegateCenter {
-    public Func<bool> GetEnableTutorial;
-    public Action<bool> SetEnableTutorial;
-}
-
-public class SettingsController : ControllerBase {
+public class SettingsController : BComponentBase {
     private int boolTrue = 1;
     private int boolFalse = 8;
     private string isTutorialEnabledKey = "EnableTutorial";
@@ -39,30 +34,14 @@ public class SettingsController : ControllerBase {
     public static SettingsController shared = null;
     protected override void Awake() {
         base.Awake();
-        if (SettingsController.shared == null) {
-            SettingsController.shared = this;
-        } else if (SettingsController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         if (this.isFirstRun) {
             InitSettings();
             this.isFirstRun = false;
         }
     }
 
-    protected override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter dc = DelegateCenter.shared;
-        Func<bool> GetEnableTutorial = () => { return this.isTutorialEnabled; };
-        Action<bool> SetEnableTutorial = (v) => { this.isTutorialEnabled = v; };
-        dc.GetEnableTutorial += GetEnableTutorial;
-        dc.SetEnableTutorial += SetEnableTutorial;
-        this.lifeCycle.OnceOnDestroy(() => {
-            dc.GetEnableTutorial -= GetEnableTutorial;
-            dc.SetEnableTutorial -= SetEnableTutorial;
-        });
+    public void InjectDependencies() {
+        base.isInjected = true;
     }
     // End: Singleton initialization
 }

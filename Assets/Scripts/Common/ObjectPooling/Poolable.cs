@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Poolable: MonoBehaviour {
+public class Poolable: BComponentBase {
     //Used to check if the object is appeared at least once
     public bool appearAtLeastOnce = false;
     [HideInInspector] public PoolItem poolItem = null;
@@ -15,15 +15,11 @@ public class Poolable: MonoBehaviour {
     private bool firstFrameAfterEnable;
 
     public void Recycle() {
-        DelegateCenter.shared.Recycle(this);
+        base.GetDep<ObjectPoolController>().Recycle(this);
     }
 
     public void Recycle(float t) {
-        DelegateCenter.shared.RecycleWithDelay(this, t);
-    }
-
-    private void Awake() {
-        this.r = this.gameObject.GetComponent<Renderer>();
+        base.GetDep<ObjectPoolController>().Recycle(this, t);
     }
 
     private void Update() {
@@ -52,4 +48,20 @@ public class Poolable: MonoBehaviour {
             }
         }
     }
+
+// Mark: initialization
+    protected override void Awake() {
+        base.Awake();
+        this.r = this.gameObject.GetComponent<Renderer>();
+
+    }
+
+    public void InjectDependencies(
+        ObjectPoolController opc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<ObjectPoolController>(opc);
+        base.isInjected = true;
+    }
+// End: initialization
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EffectController: ControllerBase {
+public class EffectController: BComponentBase {
     [Header("Score Settings")]
     public GameObject ScorePrefab;
     public Vector2 ScoreOffset = new Vector2(2, 1);

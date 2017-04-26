@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : ControllerBase {
+public class PlayerController : BComponentBase {
     public List<string> positionMarkNames = new List<string>() { "L1", "L2", "L3" };
     public string playerMarkName = "Player";
     public Player playerPrefab = null;
@@ -17,7 +17,7 @@ public class PlayerController : ControllerBase {
 
 	private void Update () {
         InputController.shared.PlayerMoveUp(()=> {
-            if (DelegateCenter.shared.IsGamePaused()) { return; }
+            if (base.GetDep<GameController>().isPaused) { return; }
             if (this.currentPosition < this.maxPosition) {
                 this.currentPosition += 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -25,7 +25,7 @@ public class PlayerController : ControllerBase {
         });
 
         InputController.shared.PlayerMoveDown(() => {
-            if (DelegateCenter.shared.IsGamePaused()) { return; }
+            if (base.GetDep<GameController>().isPaused) { return; }
             if (this.currentPosition > 0) {
                 this.currentPosition -= 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -82,18 +82,18 @@ public class PlayerController : ControllerBase {
     }
 // End: Scene initialization
 
-// Mark: Singleton initialization
-    public static PlayerController shared = null;
+// Mark: initialization
     override protected void Awake() {
         base.Awake();
-        if (PlayerController.shared == null) {
-            PlayerController.shared = this;
-        }else if (PlayerController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
         this.currentPosition = this.defaultPosition;
     }
-// End: Singleton initialization
+
+    public void InjectDependencies(
+        GameController gc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<GameController>(gc);
+        base.isInjected = true;
+    }
+// End: initialization
 }

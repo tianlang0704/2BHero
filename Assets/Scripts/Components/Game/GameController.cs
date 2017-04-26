@@ -4,25 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public partial class DelegateCenter {
-    public Action<int> Score;
     public Action<int> OnScoreChange;
-    public Action<int> DeductLife;
     public Action<int> OnLifeChange;
     public Action<int> OnDifficultyIncrement;
     public Action OnGameOver;
     public Action OnGameStart;
     public Action OnGamePause;
     public Action OnGameResume;
-    public Action<Action, Action> GamePauseResume;
-    public Action GamePause;
-    public Action GameResume;
-    public Action GameRestart;
-    public Action GameStart;
-    public Action GameOver;
-    public Func<bool> IsGamePaused;
 }
 
-public class GameController : ControllerBase {
+public class GameController : BComponentBase {
     public int defaultScore = 0;
     public int defaultLife = 3;
     public DialogScore scoreMenuPrefab;
@@ -48,18 +39,18 @@ public class GameController : ControllerBase {
     public void GamePause() {
         if (this.isPaused) { return; }
         this.isPaused = true;
-        if (DelegateCenter.shared.OnGamePause != null) { DelegateCenter.shared.OnGamePause(); }
+        if (base.GetDep<DelegateCenter>().OnGamePause != null) { base.GetDep<DelegateCenter>().OnGamePause(); }
     }
 
     public void GameResume() {
         if (!this.isPaused) { return; }
         this.isPaused = false;
-        if (DelegateCenter.shared.OnGameResume != null) { DelegateCenter.shared.OnGameResume(); }
+        if (base.GetDep<DelegateCenter>().OnGameResume != null) { base.GetDep<DelegateCenter>().OnGameResume(); }
     }
 
     public void GameRestart() {
         GameOver(false);
-        DelegateCenter.shared.LoadGameScene();
+        base.GetDep<SceneController>().LoadGameScene();
         GameStart();
     }
 
@@ -80,10 +71,10 @@ public class GameController : ControllerBase {
         ResetScore();
         GameResume();
 
-        DelegateCenter.shared.StartDifficultLoop(() => {
+        base.GetDep<DifficultyContoroller>().StartDifficultLoop(() => {
             this.isGameStarted = true;
-            DelegateCenter.shared.StartSpawningEnemy();
-            if (DelegateCenter.shared.OnGameStart != null) { DelegateCenter.shared.OnGameStart(); }
+            base.GetDep<EnemyController>().StartSpawning();
+            if (base.GetDep<DelegateCenter>().OnGameStart != null) { base.GetDep<DelegateCenter>().OnGameStart(); }
         });
     }
 
@@ -95,23 +86,23 @@ public class GameController : ControllerBase {
     public void GameOver(bool callOnGameover) {
         if (!this.isGameStarted) { return; }
         this.isGameStarted = false;
-        DelegateCenter.shared.StopDifficultLoop();
-        DelegateCenter.shared.StopSpawningEnemy();
-        DelegateCenter.shared.ClearAllEnemies();
-        if(DelegateCenter.shared.OnGameOver != null && callOnGameover) { DelegateCenter.shared.OnGameOver(); }
+        base.GetDep<DifficultyContoroller>().StopDifficultLoop();
+        base.GetDep<EnemyController>().StopSpawning();
+        base.GetDep<EnemyController>().ClearAllEnemies();
+        if(base.GetDep<DelegateCenter>().OnGameOver != null && callOnGameover) { base.GetDep<DelegateCenter>().OnGameOver(); }
         
     }
 // End: Game controls
 
 // Mark: Game stats
-    virtual protected void Score(int score) {
+    public virtual void Score(int score) {
         this.score += score;
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
+        if (base.GetDep<DelegateCenter>().OnScoreChange != null) { base.GetDep<DelegateCenter>().OnScoreChange(this.score); }
     }
 
-    virtual protected void DeductLife(int amount) {
+    public virtual void DeductLife(int amount) {
         this.life -= amount;
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (base.GetDep<DelegateCenter>().OnLifeChange != null) { base.GetDep<DelegateCenter>().OnLifeChange(this.life); }
         if (this.life <= 0) {
             GameOver();
         }
@@ -119,12 +110,12 @@ public class GameController : ControllerBase {
 
     public void ResetScore() {
         this.score = 0;
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
+        if (base.GetDep<DelegateCenter>().OnScoreChange != null) { base.GetDep<DelegateCenter>().OnScoreChange(this.score); }
     }
 
     public void ResetLife() {
         this.life = this.defaultLife;
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (base.GetDep<DelegateCenter>().OnLifeChange != null) { base.GetDep<DelegateCenter>().OnLifeChange(this.life); }
         
     }
 // End: Game stats
@@ -136,23 +127,23 @@ public class GameController : ControllerBase {
 
     virtual protected void OnGameOver() {
         GameResume();
-        DelegateCenter.shared.SetStatsBarActive(false);
+        base.GetDep<DelegateCenter>().SetStatsBarActive(false);
         this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score, false, ()=> {
-            DelegateCenter.shared.SetStatsBarActive(true);
+            base.GetDep<DelegateCenter>().SetStatsBarActive(true);
         });
     }
 
     virtual protected void OnGamePause() {
-        DelegateCenter.shared.BlurBGM();
+        base.GetDep<SoundController>().BlurBGM();
     }
 
     virtual protected void OnGameResume() {
-        DelegateCenter.shared.NormalizeBGM();
+        base.GetDep<SoundController>().NormalizeBGM();
     }
 
     virtual protected void OnFirstUpdateAfterStart() {
-        if (DelegateCenter.shared.OnScoreChange != null) { DelegateCenter.shared.OnScoreChange(this.score); }
-        if (DelegateCenter.shared.OnLifeChange != null) { DelegateCenter.shared.OnLifeChange(this.life); }
+        if (base.GetDep<DelegateCenter>().OnScoreChange != null) { base.GetDep<DelegateCenter>().OnScoreChange(this.score); }
+        if (base.GetDep<DelegateCenter>().OnLifeChange != null) { base.GetDep<DelegateCenter>().OnLifeChange(this.life); }
     }
 // End: Game events
 
@@ -164,57 +155,41 @@ public class GameController : ControllerBase {
     }
 
 // Mark: Singleton initialization
-    public static GameController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (GameController.shared == null) {
-            GameController.shared = this;
-        } else if (GameController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
     protected override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
-        DelegateCenter mc = DelegateCenter.shared;
+        DelegateCenter mc = base.GetDep<DelegateCenter>();
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        mc.Score += Score;
-        mc.DeductLife += DeductLife;
         mc.OnGameOver += OnGameOver;
         mc.OnGameStart += OnGameStart;
         mc.OnGamePause += OnGamePause;
         mc.OnGameResume += OnGameResume;
-        mc.GamePauseResume += GamePauseResume;
-        mc.GameRestart += GameRestart;
-        mc.GamePause += GamePause;
-        mc.GameResume += GameResume;
-        mc.GameOver += GameOver;
-        mc.GameStart += GameStartInitSafe;
-        Func<bool> IsGamePaused = () => { return this.isPaused; };
-        mc.IsGamePaused += IsGamePaused;
-
         lc.OnceOnDestroy(() => {
-            mc.Score -= Score;
-            mc.DeductLife -= DeductLife;
             mc.OnGameOver -= OnGameOver;
             mc.OnGameStart -= OnGameStart;
             mc.OnGamePause -= OnGamePause;
             mc.OnGameResume -= OnGameResume;
-            mc.GamePauseResume -= GamePauseResume;
-            mc.GameRestart -= GameRestart;
-            mc.GamePause -= GamePause;
-            mc.GameResume -= GameResume;
-            mc.GameOver -= GameOver;
-            mc.GameStart -= GameStartInitSafe;
-            mc.IsGamePaused -= IsGamePaused;
         });
         
         lc.OnceOnFirstFixedUpdate(() => {
             this.isInitDone = true;
         });
+    }
+
+    public void InjectDependencies(
+        DifficultyContoroller dc,
+        EnemyController ec,
+        SceneController sc,
+        SoundController soundC,
+        DelegateCenter delegateC
+    ) {
+        base.ClearDependencies();
+        base.AddDep<DifficultyContoroller>(dc);
+        base.AddDep<EnemyController>(ec);
+        base.AddDep<SceneController>(sc);
+        base.AddDep<SoundController>(soundC);
+        base.AddDep<DelegateCenter>(delegateC);
+        base.isInjected = true;
     }
 // End: Singleton initialization
 }

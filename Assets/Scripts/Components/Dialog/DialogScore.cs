@@ -29,7 +29,7 @@ public class DialogScore : PopupDialogBase {
     }
 
     public virtual void Show(bool isHighScore = false, Action closeAction = null) {
-        DelegateCenter.shared.BlurBGM();
+        base.GetDep<SoundController>().BlurBGM();
         if (isHighScore) {
             this.GetComponent<AudioSource>().PlayOneShot(this.highScoreSound, this.soundVolume);
         }else {
@@ -41,17 +41,17 @@ public class DialogScore : PopupDialogBase {
 
     public override void CloseMenu() {
         base.CloseMenu();
-        DelegateCenter.shared.NormalizeBGM();
+        base.GetDep<SoundController>().NormalizeBGM();
     }
 
     public void HandleMenu() {
         CloseMenu();
-        DelegateCenter.shared.LoadMenuScene();
+        base.GetDep<SceneController>().LoadMenuScene();
     }
 
     public void HandlePlay() {
         CloseMenu();
-        DelegateCenter.shared.GameRestart();
+        base.GetDep<GameController>().GameRestart();
     }
 
 
@@ -66,4 +66,21 @@ public class DialogScore : PopupDialogBase {
             this.scoreText.text = Math.Ceiling(s).ToString();
         }
     }
+
+// Mark: Initializeation
+    protected override void Awake() {
+        base.Awake();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
+    }
+
+    public void InjectDependencies(
+        GameController gc,
+        SoundController sc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<GameController>(gc);
+        base.AddDep<SoundController>(sc);
+        base.isInjected = true;
+    }
+// End: Initializeation
 }

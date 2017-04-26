@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DialogMain : MonoBehaviour {
+public class DialogMain : BComponentBase {
     public DialogOption optionMenuPrefab;
 
     public void HandleStartGame() {
-        DelegateCenter.shared.LoadGameScene();
-        DelegateCenter.shared.GameStart();
+        base.GetDep<SceneController>().LoadGameScene();
+        base.GetDep<GameController>().GameStart();
     }
 
     public void HandleOption() {
@@ -18,10 +18,28 @@ public class DialogMain : MonoBehaviour {
     }
 
     public void HandleCredit() {
-        DelegateCenter.shared.LoadCreditsScene();
+        base.GetDep<SceneController>().LoadCreditsScene();
     }
 
     public void HandleExit() {
         Application.Quit();
     }
+
+// Mark: Initializeation
+    protected override void Awake() {
+        base.Awake();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
+    }
+
+    public void InjectDependencies(
+        SceneController sc,
+        GameController gc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<SceneController>(sc);
+        base.AddDep<GameController>(gc);
+        base.isInjected = true;
+    }
+// End: Initializeation
+
 }

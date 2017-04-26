@@ -3,14 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class DelegateCenter {
-    public Action<Poolable> Recycle;
-    public Action<Poolable, float> RecycleWithDelay;
-    public Action<Poolable> RecycleAll;
-    public Func<Poolable, Vector2?, Quaternion?, Poolable> GetPoolable;
-    public Func<string, Vector2?, Quaternion?, Poolable> GetPoolableWithName;
-}
-
 [System.Serializable]
 public class PoolItem {
     public Poolable prefab;
@@ -21,7 +13,7 @@ public class PoolItem {
     [HideInInspector] public int amountInPool { get { return this.poolableList.Count; } }
 }
 
-public class ObjectPoolController: ControllerBase {
+public class ObjectPoolController: BComponentBase {
     public string poolContainerName = "PoolContainer";
     public List<PoolItem> poolItems = new List<PoolItem>();
 
@@ -202,33 +194,10 @@ public class ObjectPoolController: ControllerBase {
     }
 // End: Scene initialization
 
-// Mark: Singleton initialization
-    public static ObjectPoolController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if(ObjectPoolController.shared == null) {
-            ObjectPoolController.shared = this;
-        }else if(ObjectPoolController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
+// Mark: initialization
+    public void InjectDependencies() {
+        base.isInjected = true;
     }
-
-    protected override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
-        mc.Recycle += Recycle;
-        this.lifeCycle.OnceOnDestroy(() => { mc.Recycle -= Recycle; });
-        mc.RecycleWithDelay += Recycle;
-        this.lifeCycle.OnceOnDestroy(() => { mc.RecycleWithDelay -= Recycle; });
-        mc.RecycleAll += RecycleAll;
-        this.lifeCycle.OnceOnDestroy(() => { mc.RecycleAll -= RecycleAll; });
-        mc.GetPoolable += GetPoolable;
-        this.lifeCycle.OnceOnDestroy(() => { mc.GetPoolable -= GetPoolable; });
-        mc.GetPoolableWithName += GetPoolable;
-        this.lifeCycle.OnceOnDestroy(() => { mc.GetPoolableWithName -= GetPoolable; });
-    }
-    // End: Singleton initialization
+// End: initialization
 }
 

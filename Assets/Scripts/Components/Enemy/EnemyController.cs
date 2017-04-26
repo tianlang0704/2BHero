@@ -4,18 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public partial class DelegateCenter {
-    public Action StartSpawningEnemy;
-    public Action StopSpawningEnemy;
-    public Action ClearAllEnemies;
-    public Action<float> SetEnemyDropSpeed;
-    public Action<float> SetEnemyMoveSpeed;
-    public Action<float> SetEnemySpawnInterval;
-    public Action<int> SetEnemyPositionIndexMax;
-    public Action<List<int>> ParseEnemyIndexes;
-}
-
-public class EnemyController : ControllerBase {
+public class EnemyController : BComponentBase {
     [Header("Resources")]
     public List<string> skyMarkNames = new List<string>() { "E2", "E3" };
     public List<string> groundMarkNames = new List<string>() { "E1" };
@@ -50,7 +39,7 @@ public class EnemyController : ControllerBase {
 
     public void ClearAllEnemies() {
         this.enemyPrefabs.ForEach((Enemy e) => {
-            DelegateCenter.shared.RecycleAll(e.GetComponent<Poolable>());
+            base.GetDep<ObjectPoolController>().RecycleAll(e.GetComponent<Poolable>());
         });
     }
 
@@ -75,7 +64,7 @@ public class EnemyController : ControllerBase {
 
     public void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
         Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = DelegateCenter.shared.GetPoolable(
+        Railable enemyOnRail = base.GetDep<ObjectPoolController>().GetPoolable(
             enemyPoolable,
             spawnMark.transform.position,
             spawnMark.transform.rotation)
@@ -142,48 +131,12 @@ public class EnemyController : ControllerBase {
 // End: Scene initialization
 
 // Mark: Singleton initialization
-    public static EnemyController shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (EnemyController.shared == null) {
-            EnemyController.shared = this;
-        } else if (EnemyController.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
-    override protected void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
-        // Enemy parameter settings
-        Action<float> SetEnemyDropSpeed = (value)=> { this.dropSpeed = value; };
-        mc.SetEnemyDropSpeed += SetEnemyDropSpeed;
-        Action<float> SetEnemyMoveSpeed = (value) => { this.moveSpeed = value; };
-        mc.SetEnemyMoveSpeed += SetEnemyMoveSpeed;
-        Action<float> SetEnemySpawnInterval = (value) => { this.spawnInterval = value; };
-        mc.SetEnemySpawnInterval += SetEnemySpawnInterval;
-        Action<int> SetEnemyPositionIndexMax = (value) => { this.rngPosIdxMax = value; };
-        mc.SetEnemyPositionIndexMax += SetEnemyPositionIndexMax;
-        mc.ParseEnemyIndexes += ParseEnemyIndexes;
-
-        // Spawning functions
-        mc.StartSpawningEnemy += StartSpawning;
-        mc.StopSpawningEnemy += StopSpawning;
-        mc.ClearAllEnemies += ClearAllEnemies;
-        
-        this.lifeCycle.OnceOnDestroy(() => {
-            mc.SetEnemyDropSpeed -= SetEnemyDropSpeed;
-            mc.SetEnemyMoveSpeed -= SetEnemyMoveSpeed;
-            mc.SetEnemySpawnInterval -= SetEnemySpawnInterval;
-            mc.SetEnemyPositionIndexMax -= SetEnemyPositionIndexMax;
-            mc.ParseEnemyIndexes -= ParseEnemyIndexes;
-
-            mc.StartSpawningEnemy -= StartSpawning;
-            mc.StopSpawningEnemy -= StopSpawning;
-            mc.ClearAllEnemies -= ClearAllEnemies;
-        });
+    public void InjectDependencies(
+        ObjectPoolController opc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<ObjectPoolController>(opc);
+        base.isInjected = true;
     }
 // End: Singleton initialization
 }

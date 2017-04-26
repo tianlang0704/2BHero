@@ -3,11 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class DelegateCenter {
-    public Action<Action> StartDifficultLoop;
-    public Action StopDifficultLoop;
-}
-
 public struct DifficultyFactors {
     public float moveSpeed;
     public float spawnInterval;
@@ -27,7 +22,7 @@ public class IndexWrapper {
     }
 }
 
-public class DifficultyContoroller : ControllerBase {
+public class DifficultyContoroller : BComponentBase {
     public float waveDuration = 7f;
     public List<float> enemySpeedFactors = new List<float>() { 0.4f };
     public float enemySpeedInfStep = 0.04f;
@@ -108,7 +103,7 @@ public class DifficultyContoroller : ControllerBase {
 
 // Mark: Difficulty loop functions
     private Coroutine difficultyLoop = null;
-    private void StartDifficultLoop(Action gameStartCallback = null) {
+    public void StartDifficultLoop(Action gameStartCallback = null) {
         // Stop the previous loop if there is one
         if (this.difficultyLoop != null) {
             StopCoroutine(this.difficultyLoop);
@@ -117,7 +112,7 @@ public class DifficultyContoroller : ControllerBase {
         this.difficultyLoop = StartCoroutine(DifficultyLoop(gameStartCallback));
     }
 
-    private void StopDifficultLoop() {
+    public void StopDifficultLoop() {
         // Return is there is no loop to stop
         if (this.difficultyLoop == null) { return; }
         StopCoroutine(this.difficultyLoop);
@@ -139,38 +134,22 @@ public class DifficultyContoroller : ControllerBase {
     }
 
     private void UpdateEnemyDifficulty(int wave) {
-        DelegateCenter mc = DelegateCenter.shared;
-        mc.SetEnemyDropSpeed(GetMoveSpeedFactor(wave));
-        mc.SetEnemyMoveSpeed(GetMoveSpeedFactor(wave));
-        mc.SetEnemySpawnInterval(GetSpawnIntervalFactor(wave));
-        mc.SetEnemyPositionIndexMax(GetRNGPosMaxFactor(wave));
-        mc.ParseEnemyIndexes(GetEnemyIndexesForWave(wave));
+        EnemyController ec = base.GetDep<EnemyController>();
+        ec.dropSpeed = GetMoveSpeedFactor(wave);
+        ec.moveSpeed = GetMoveSpeedFactor(wave);
+        ec.spawnInterval = GetSpawnIntervalFactor(wave);
+        ec.rngPosIdxMax = GetRNGPosMaxFactor(wave);
+        ec.ParseEnemyIndexes(GetEnemyIndexesForWave(wave));
     }
 // Mark: Difficulty loop functions
 
 // Mark: Singleton initialization
-    public static DifficultyContoroller shared = null;
-    override protected void Awake() {
-        base.Awake();
-        if (DifficultyContoroller.shared == null) {
-            DifficultyContoroller.shared = this;
-        } else if (DifficultyContoroller.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-
-    protected override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter mc = DelegateCenter.shared;
-        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        mc.StartDifficultLoop += StartDifficultLoop;
-        mc.StopDifficultLoop += StopDifficultLoop;
-        lc.OnceOnDestroy(() => {
-            mc.StartDifficultLoop -= StartDifficultLoop;
-            mc.StopDifficultLoop -= StopDifficultLoop;
-        });
+    public void InjectDependencies(
+        EnemyController ec
+    ) {
+        base.ClearDependencies();
+        base.AddDep<EnemyController>(ec);
+        base.isInjected = true;
     }
 // End: Singleton initialization
 }

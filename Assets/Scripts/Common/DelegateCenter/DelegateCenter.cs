@@ -11,18 +11,11 @@ using UnityEngine;
 // of the partial class. The dependencies can inject themselves into this service
 // locator by defining their delegates and make themselves available to other components;
 // They don't have to firmly depending on each other.
-public partial class DelegateCenter : MonoBehaviour {
+public partial class DelegateCenter : BComponentBase {
 
 // Mark: Singleton initialization
-    public static DelegateCenter shared = null;
-    private void Awake() {
-        if (DelegateCenter.shared == null) {
-            DelegateCenter.shared = this;
-        } else if (DelegateCenter.shared != this) {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
+    public void InjectDependencies() {
+        base.isInjected = true;
     }
 // End: Singleton initialization
 }

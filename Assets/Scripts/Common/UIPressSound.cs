@@ -4,12 +4,26 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
-public class UIPressSound : MonoBehaviour {  
+public class UIPressSound : BComponentBase {  
     public AudioClip pressSound;
 
-    void Start () {
+    protected override void Start () {
+        base.Start();
         this.GetComponent<Button>().onClick.AddListener(() => {
-            DelegateCenter.shared.PlayUIOneShot(this.pressSound);
+            base.GetDep<SoundController>().PlayUIOneShot(this.pressSound);
         }); ;
 	}
+
+    protected override void Awake() {
+        base.Awake();
+        GameObject.FindObjectOfType<Loader>().DynamicInjection(this);
+    }
+
+    public void InjectDependencies(
+        SoundController sc
+    ) {
+        base.ClearDependencies();
+        base.AddDep<SoundController>(sc);
+        base.isInjected = true;
+    }
 }
