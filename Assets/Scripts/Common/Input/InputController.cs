@@ -7,7 +7,7 @@ enum SwipeDirection {
     Left, Up, Right, Down, NA
 }
 
-public class InputController : ControllerBase {
+public class InputController : MonoInjectable {
     private float shootPressBeginTime;
     private bool shootPressed = false;
     private float detectableAreaSize;

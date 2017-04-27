@@ -9,7 +9,7 @@ public partial class DelegateCenter {
 
 [RequireComponent(typeof(LifeCycleDelegates))]
 [RequireComponent(typeof(AudioSource))]
-public class Shooter : MonoBehaviour {
+public class Shooter : MonoInjectable {
     [Header("Bullet Resource")]
     public string spawnMarkName = "SpawnMark";
     public Poolable bullet = null;
@@ -33,8 +33,8 @@ public class Shooter : MonoBehaviour {
         get { return _bulletCount; }
         set {
             _bulletCount = value;
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnBulletCountChange != null) {
-                Loader.shared.GetSingleton<DelegateCenter>().OnBulletCountChange(this);
+            if (this.delegateCenter.OnBulletCountChange != null) {
+                this.delegateCenter.OnBulletCountChange(this);
             }
         }
     }
@@ -47,6 +47,11 @@ public class Shooter : MonoBehaviour {
     private AudioSource audioSource;
 
     protected virtual Animator targetAnimator { get { return this.GetComponent<Animator>(); } }
+
+    [Inject]
+    protected DelegateCenter delegateCenter;
+    [Inject]
+    protected ObjectPoolController objectPoolController;
 
 // Mark: Shoot functions
     public void Shoot(float factor) {
@@ -77,7 +82,7 @@ public class Shooter : MonoBehaviour {
     public void DoShoot(float factor) {
         this.audioSource.PlayOneShot(this.shootSounds.GetRandom(), 0.7f);
         float horizontalForce = this.forceMin + this.forceDelta * factor;
-        Rigidbody2D newBulletRb2d = Loader.shared.GetSingleton<DelegateCenter>().GetPoolable(
+        Rigidbody2D newBulletRb2d = this.objectPoolController.GetPoolable(
             this.bullet,
             this.spawnMark.position,
             this.gameObject.transform.rotation)
@@ -123,15 +128,17 @@ public class Shooter : MonoBehaviour {
     }
 // End: Assistant functions
 
-    private void Awake() {
+    protected override void Awake() {
+        base.Awake();
         this.spawnMark = this.transform.Find(this.spawnMarkName);
         this.audioSource = this.GetComponent<AudioSource>();
     }
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         // Initialize delegates
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
+        DelegateCenter dc = this.delegateCenter;
         dc.OnGameResume += EnableShoot;
         dc.OnGamePause += DisableShoot;
         lc.OnceOnDestroy(() => {

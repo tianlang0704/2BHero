@@ -10,9 +10,8 @@ public partial class DelegateCenter {
     public Action OnShootStart;
 }
 
-
 // TODO: Change this into weapon controller and move shooting control to player controller
-public class ShootController : ControllerBase {
+public class ShootController : MonoInjectable {
     public float maxPressTime = 0.35f;
     public List<Shooter> shooterPrefabs = new List<Shooter>();
     public int defaultPrefabIndex = 0;
@@ -21,15 +20,19 @@ public class ShootController : ControllerBase {
     private List<Shooter> shooters = new List<Shooter>();
     private float shootTimeFactor;
     private int prefabIndex;
-    private InputController inputCont;
+
+    [Inject]
+    protected DelegateCenter delegateCenter;
+    [Inject]
+    protected InputController inputController;
 
     private void Update() {
-        this.inputCont.VariableDurationShoot((timePassed, isShoot)=> {
+        this.inputController.VariableDurationShoot((timePassed, isShoot)=> {
             // Shoot Press End Handler
             if (timePassed > this.maxPressTime) { timePassed = this.maxPressTime; }
             // Do last press in progress update to set progress to 0
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnShootHoldUpdate != null) {
-                Loader.shared.GetSingleton<DelegateCenter>().OnShootHoldUpdate(timePassed * this.shootTimeFactor);
+            if (this.delegateCenter.OnShootHoldUpdate != null) {
+                this.delegateCenter.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
             }
             // Stop aiming no matter what (is move or shoot)
             this.shooters.ForEach((Shooter s) => { s.AimStop(); });
@@ -37,22 +40,22 @@ public class ShootController : ControllerBase {
             if (isShoot) {
                 this.shooters.ForEach((Shooter s) => { s.Shoot(timePassed * this.shootTimeFactor); });
             }
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnShootEnd != null) { Loader.shared.GetSingleton<DelegateCenter>().OnShootEnd(); }
+            if (this.delegateCenter.OnShootEnd != null) { this.delegateCenter.OnShootEnd(); }
         }, (timePassed)=> {
             // Shoot Press In Progress Handler
             // Play aim animation when overlapped animation ends and key is still pressed
             this.shooters.ForEach((Shooter s) => { s.Aim(); });
             // Call shoot press on hold event
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnShootHoldUpdate != null) {
+            if (this.delegateCenter.OnShootHoldUpdate != null) {
                 // Use shoot time factor to make the parameter range from 0 to 1
                 if (timePassed > this.maxPressTime) { timePassed = this.maxPressTime; }
-                Loader.shared.GetSingleton<DelegateCenter>().OnShootHoldUpdate(timePassed * this.shootTimeFactor);
+                this.delegateCenter.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
             }
         }, () => {
             // Shoot Press Start Handler
             this.shooters.ForEach((Shooter s) => { s.Aim(); });
             // Call shoot press begin
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnShootStart != null) { Loader.shared.GetSingleton<DelegateCenter>().OnShootStart(); }
+            if (this.delegateCenter.OnShootStart != null) { this.delegateCenter.OnShootStart(); }
         });
     }
 
@@ -96,16 +99,9 @@ public class ShootController : ControllerBase {
     }
 // End: Scene initialization
 
-// Mark: Singleton initialization
     protected override void Awake() {
         base.Awake();
         this.shootTimeFactor = 1 / this.maxPressTime;
         this.prefabIndex = this.defaultPrefabIndex;
     }
-
-    protected override void Start() {
-        base.Start();
-        this.inputCont = Loader.shared.GetSingleton<InputController>();
-    }
-    // End: Singleton initialization
 }

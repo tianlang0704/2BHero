@@ -7,26 +7,27 @@ using UnityEngine;
 [RequireComponent(typeof(Railable))]
 [RequireComponent(typeof(LifeCycleDelegates))]
 [RequireComponent(typeof(GroundDetector))]
-public class Enemy : MonoBehaviour {
-    virtual public void Recycle(float delay) {
+public class Enemy : MonoInjectable {
+    public virtual void Recycle(float delay) {
         this.GetComponent<Poolable>().Recycle(delay);
     }
 
-    virtual public void Recycle() {
+    public virtual void Recycle() {
         this.GetComponent<Poolable>().Recycle();
     }
 
-    virtual protected void OnEnable() {
+    protected virtual void OnEnable() {
         OnSpawn();
     }
 
-    virtual protected void OnSpawn() { }
+    protected virtual void OnSpawn() { }
 
-    virtual protected void OnRecycle() { }
+    protected virtual void OnRecycle() { }
 
-    virtual protected void OnCollisionEnter2D(Collision2D collision) { }
+    protected virtual void OnCollisionEnter2D(Collision2D collision) { }
 
-    virtual protected void Awake() {
+    protected override void Awake() {
+        base.Awake();
         this.gameObject.SetActive(false);
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         lc.SubOnRecycle(OnRecycle);

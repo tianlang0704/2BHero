@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DialogMain : MonoBehaviour {
+public class DialogMain : MonoInjectable {
     public DialogOption optionMenuPrefab;
 
+    [Inject]
+    protected GameController gameController;
+    [Inject]
+    protected SceneController sceneController;
+
     public void HandleStartGame() {
-        Loader.shared.GetSingleton<DelegateCenter>().LoadGameScene();
-        Loader.shared.GetSingleton<DelegateCenter>().GameStart();
+        this.sceneController.LoadGameScene();
+        this.gameController.GameStart();
     }
 
     public void HandleOption() {
@@ -18,7 +23,7 @@ public class DialogMain : MonoBehaviour {
     }
 
     public void HandleCredit() {
-        Loader.shared.GetSingleton<DelegateCenter>().LoadCreditsScene();
+        this.sceneController.LoadCreditsScene();
     }
 
     public void HandleExit() {

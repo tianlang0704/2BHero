@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : ControllerBase {
+public class PlayerController : MonoInjectable {
     public List<string> positionMarkNames = new List<string>() { "L1", "L2", "L3" };
     public string playerMarkName = "Player";
     public Player playerPrefab = null;
@@ -16,9 +16,12 @@ public class PlayerController : ControllerBase {
     private Player player;
     private InputController inputCont;
 
+    [Inject]
+    protected GameController gameController;
+
 	private void Update () {
         this.inputCont.PlayerMoveUp(()=> {
-            if (Loader.shared.GetSingleton<DelegateCenter>().IsGamePaused()) { return; }
+            if (this.gameController.isPaused) { return; }
             if (this.currentPosition < this.maxPosition) {
                 this.currentPosition += 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);
@@ -26,7 +29,7 @@ public class PlayerController : ControllerBase {
         });
 
         this.inputCont.PlayerMoveDown(() => {
-            if (Loader.shared.GetSingleton<DelegateCenter>().IsGamePaused()) { return; }
+            if (this.gameController.isPaused) { return; }
             if (this.currentPosition > 0) {
                 this.currentPosition -= 1;
                 this.player.Move(this.positionMarks[this.currentPosition]);

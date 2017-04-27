@@ -4,13 +4,19 @@ using UnityEngine;
 
 [RequireComponent(typeof(LifeCycleDelegates))]
 public class DialogTutorial : PopupDialogBase {
-    private InputController inputCont;
+    [Inject]
+    protected InputController inputController;
+    [Inject]
+    protected SettingsController settingsController;
+    [Inject]
+    protected GameController gameController;
 
-    private void Awake() {
+    protected override void Awake() {
+        base.Awake();
         this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
-            if (Loader.shared.GetSingleton<DelegateCenter>().GetEnableTutorial()) {
+            if (this.settingsController.isTutorialEnabled) {
                 this.gameObject.SetActive(true);
-                Loader.shared.GetSingleton<DelegateCenter>().GamePause();
+                this.gameController.GamePause();
             }else {
                 this.gameObject.SetActive(false);
             }
@@ -18,14 +24,10 @@ public class DialogTutorial : PopupDialogBase {
     }
 
     private void Update() {
-        this.inputCont.VariableDurationShoot((a, b) => {
+        this.inputController.VariableDurationShoot((a, b) => {
             this.gameObject.SetActive(false);
-            Loader.shared.GetSingleton<DelegateCenter>().SetEnableTutorial(false);
-            Loader.shared.GetSingleton<DelegateCenter>().GameResume();
+            this.settingsController.isTutorialEnabled = false;
+            this.gameController.GameResume();
         });
-    }
-
-    private void Start() {
-        this.inputCont = Loader.shared.GetSingleton<InputController>();
     }
 }

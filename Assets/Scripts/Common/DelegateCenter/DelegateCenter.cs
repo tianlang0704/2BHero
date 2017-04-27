@@ -11,6 +11,6 @@ using UnityEngine;
 // of the partial class. The dependencies can inject themselves into this service
 // locator by defining their delegates and make themselves available to other components;
 // They don't have to firmly depending on each other.
-public partial class DelegateCenter : ControllerBase {
+public partial class DelegateCenter : MonoInjectable {
 
 }

@@ -21,6 +21,13 @@ public class DialogScore : PopupDialogBase {
 
     private int score;
 
+    [Inject]
+    protected SoundController soundController;
+    [Inject]
+    protected SceneController sceneController;
+    [Inject]
+    protected GameController gameController;
+
     public void ClonePrefabAndShow(string title, int score, bool isHighScore = false, Action closeAction = null) {
         DialogScore s = Instantiate(this);
         s.score = score;
@@ -29,7 +36,7 @@ public class DialogScore : PopupDialogBase {
     }
 
     public virtual void Show(bool isHighScore = false, Action closeAction = null) {
-        Loader.shared.GetSingleton<DelegateCenter>().BlurBGM();
+        this.soundController.BlurBGM();
         if (isHighScore) {
             this.GetComponent<AudioSource>().PlayOneShot(this.highScoreSound, this.soundVolume);
         }else {
@@ -41,17 +48,17 @@ public class DialogScore : PopupDialogBase {
 
     public override void CloseMenu() {
         base.CloseMenu();
-        Loader.shared.GetSingleton<DelegateCenter>().NormalizeBGM();
+        this.soundController.NormalizeBGM();
     }
 
     public void HandleMenu() {
         CloseMenu();
-        Loader.shared.GetSingleton<DelegateCenter>().LoadMenuScene();
+        this.sceneController.LoadMenuScene();
     }
 
     public void HandlePlay() {
         CloseMenu();
-        Loader.shared.GetSingleton<DelegateCenter>().GameRestart();
+        this.gameController.GameRestart();
     }
 
 

@@ -4,17 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public partial class DelegateCenter {
-    public Action LoadGameScene;
-    public Action LoadMenuScene;
-    public Action LoadCreditsScene;
-}
-
-
-public class SceneController : ControllerBase {
+public class SceneController : MonoInjectable {
     public string menuSceneName = "menu";
     public string gameSceneName = "game";
     public string creditsSceneName = "credits";
+
+    [Inject]
+    protected SoundController soundController;
 
     public void LoadGameScene() {
         SceneManager.LoadScene(this.gameSceneName);
@@ -42,15 +38,14 @@ public class SceneController : ControllerBase {
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         if (!lc.isAfterFirstUpdate) {
             lc.OnceOnFirstdUpdate(() => {
-                Loader.shared.GetSingleton<DelegateCenter>().PlayBGMForSetting(sceneName);
+                this.soundController.PlayBGMForSetting(sceneName);
             });
         }else {
-            Loader.shared.GetSingleton<DelegateCenter>().StopBGM();
-            Loader.shared.GetSingleton<DelegateCenter>().PlayBGMForSetting(sceneName);
+            this.soundController.StopBGM();
+            this.soundController.PlayBGMForSetting(sceneName);
         }
     }
 
-// Mark: Singleton initialization
     override protected void Awake() {
         base.Awake();
         // Setting OnSceneLoaded delegate in awake for getting the first call
@@ -59,20 +54,4 @@ public class SceneController : ControllerBase {
             SceneManager.sceneLoaded -= OnSceneLoaded;
         });
     }
-
-    public override void InitializeDelegates() {
-        base.InitializeDelegates();
-        // Setup delegates
-        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
-        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        mc.LoadGameScene += LoadGameScene;
-        mc.LoadMenuScene += LoadMenuScene;
-        mc.LoadCreditsScene += LoadCreditsScene;
-        lc.OnceOnDestroy(() => {
-            mc.LoadGameScene -= LoadGameScene;
-            mc.LoadMenuScene -= LoadMenuScene;
-            mc.LoadCreditsScene -= LoadCreditsScene;
-        });
-    }
-// End: Singleton initialization
 }

@@ -9,7 +9,7 @@ public partial class DelegateCenter {
 }
 
 [RequireComponent(typeof(LifeCycleDelegates))]
-public class DialogStats : MonoBehaviour {
+public class DialogStats : MonoInjectable {
     public DialogOption optionMenuPrefab;
     public DialogPause pauseMenuPrefab;
     public Text scoreText;
@@ -19,12 +19,17 @@ public class DialogStats : MonoBehaviour {
     private DialogOption optionMenu = null;
     private DialogPause pauseMenu = null;
 
+    [Inject]
+    protected DelegateCenter delegateCenter;
+    [Inject]
+    protected GameController gameController;
+
     public void HandlePause() {
         if(this.pauseMenu != null) { this.pauseMenu.CloseMenu(); return; }
-        Loader.shared.GetSingleton<DelegateCenter>().GamePause();
+        this.gameController.GamePause();
         this.pauseMenu = Instantiate(this.pauseMenuPrefab);
         this.pauseMenu.Show(() => {
-            Loader.shared.GetSingleton<DelegateCenter>().GameResume();
+            this.gameController.GameResume();
             this.pauseMenu = null;
         });
     }
@@ -40,11 +45,11 @@ public class DialogStats : MonoBehaviour {
     }
 
     public void HandleRestart() {
-        Loader.shared.GetSingleton<DelegateCenter>().GameRestart();
+        this.gameController.GameRestart();
     }
 
     public void HandleStop() {
-        Loader.shared.GetSingleton<DelegateCenter>().GameOver();
+        this.gameController.GameOver();
     }
 
     private void OnScoreChange(int score) {
@@ -59,8 +64,9 @@ public class DialogStats : MonoBehaviour {
         this.bulletText.text = s.bulletCount.ToString();
     }
 
-    private void Start() {
-        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
+    protected override void Start() {
+        base.Start();
+        DelegateCenter dc = this.delegateCenter;
         dc.OnScoreChange += OnScoreChange;
         dc.OnLifeChange += OnLifeChange;
         dc.OnBulletCountChange += OnBulletCountChange;

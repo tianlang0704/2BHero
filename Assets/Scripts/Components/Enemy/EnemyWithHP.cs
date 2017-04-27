@@ -24,6 +24,9 @@ public class EnemyWithHP : Enemy {
     private bool callOnDie = false;
     private AudioSource audioSource;
 
+    [Inject]
+    protected GameController gameController;
+
     virtual public void Hit(BulletWithDamage dmger) {
         this.hp -= dmger.damage;
         OnHit(dmger);
@@ -73,7 +76,7 @@ public class EnemyWithHP : Enemy {
         this.GetComponent<Animator>().SetTrigger("hit");
         this.audioSource.PlayOneShot(this.hitSounds.GetRandom(), 0.9f);
         if (!this.callOnDie && this.hp <= 0) {
-            Loader.shared.GetSingleton<DelegateCenter>().Score(this.score);
+            this.gameController.Score(this.score);
             this.callOnDie = true;
             this.killer = dmger;
         }

@@ -9,23 +9,41 @@ public class DialogOption : PopupDialogBase {
     public Toggle sfxToggle;
     public AudioClip buttonSound;
 
+    [Inject]
+    protected SoundController soundController;
+
+    /// <summary>
+    /// Handle BGM toggle press
+    /// </summary>
+    /// <param name="b">true for enable, false for disable</param>
     public void BGMHandler(bool b) {
-        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
-        Loader.shared.GetSingleton<DelegateCenter>().SetBGMMuted(!b);
+        this.soundController.PlayUIOneShot(this.buttonSound);
+        this.soundController.isBGMMuted = !b;
     }
 
+    /// <summary>
+    /// Handle SFX toggle press
+    /// </summary>
+    /// <param name="b">true for enable, false for disable</param>
     public void SFXHandler(bool b) {
-        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
-        Loader.shared.GetSingleton<DelegateCenter>().SetSFXMuted(!b);
+        this.soundController.PlayUIOneShot(this.buttonSound);
+        this.soundController.isSFXMuted = !b;
     }
 
+    /// <summary>
+    /// Handle close button
+    /// </summary>
     public void CloseHandler() {
-        Loader.shared.GetSingleton<DelegateCenter>().PlayUIOneShot(this.buttonSound);
+        this.soundController.PlayUIOneShot(this.buttonSound);
         CloseMenu();
     }
 
-    protected virtual void Awake() {
-        this.musicToggle.isOn = !Loader.shared.GetSingleton<DelegateCenter>().IsBGMMuted();
-        this.sfxToggle.isOn = !Loader.shared.GetSingleton<DelegateCenter>().IsSFXMuted();
+    /// <summary>
+    /// Read sound setting when Awake;
+    /// </summary>
+    protected override void Awake() {
+        base.Awake();
+        this.musicToggle.isOn = !this.soundController.isBGMMuted;
+        this.sfxToggle.isOn = !this.soundController.isSFXMuted;
     }
 }

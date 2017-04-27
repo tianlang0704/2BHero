@@ -4,25 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public partial class DelegateCenter {
-    public Action<int> Score;
     public Action<int> OnScoreChange;
-    public Action<int> DeductLife;
     public Action<int> OnLifeChange;
     public Action<int> OnDifficultyIncrement;
     public Action OnGameOver;
     public Action OnGameStart;
     public Action OnGamePause;
     public Action OnGameResume;
-    public Action<Action, Action> GamePauseResume;
-    public Action GamePause;
-    public Action GameResume;
-    public Action GameRestart;
-    public Action GameStart;
-    public Action GameOver;
-    public Func<bool> IsGamePaused;
 }
 
-public class GameController : ControllerBase {
+/// <summary>
+/// Class for managing game stats and pause-start
+/// </summary>
+public class GameController : MonoInjectable {
     public int defaultScore = 0;
     public int defaultLife = 3;
     public DialogScore scoreMenuPrefab;
@@ -34,7 +28,24 @@ public class GameController : ControllerBase {
     private bool isInitDone = false;
     private bool isFirstFixedUpdateAfterStart = true;
 
+    // Dependencies
+    [Inject]
+    protected DelegateCenter delegateCenter;
+    [Inject]
+    protected SceneController sceneController ;
+    [Inject]
+    protected DifficultyContoroller difficultyContoroller;
+    [Inject]
+    protected EnemyController enemyController;
+    [Inject]
+    protected SoundController soundController;
+
 // Mark: Game controls
+    /// <summary>
+    /// Toggle game pause resume
+    /// </summary>
+    /// <param name="pauseDo">Called when game paused</param>
+    /// <param name="resumeDo">Called when game resumed</param>
     public void GamePauseResume(Action pauseDo = null, Action resumeDo = null) {
         if (this.isPaused) {
             GameResume();
@@ -44,118 +55,158 @@ public class GameController : ControllerBase {
             if (pauseDo != null) { pauseDo(); }
         }
     }
-
+    /// <summary>
+    /// Method for pausing the gmae
+    /// </summary>
     public void GamePause() {
         if (this.isPaused) { return; }
         this.isPaused = true;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnGamePause != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGamePause(); }
+        if (this.delegateCenter.OnGamePause != null) { this.delegateCenter.OnGamePause(); }
     }
-
+    /// <summary>
+    /// Method for resuming the game
+    /// </summary>
     public void GameResume() {
         if (!this.isPaused) { return; }
         this.isPaused = false;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnGameResume != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGameResume(); }
+        if (this.delegateCenter.OnGameResume != null) { this.delegateCenter.OnGameResume(); }
     }
-
+    /// <summary>
+    /// Method for restarting the game
+    /// </summary>
     public void GameRestart() {
+        // End the game
         GameOver(false);
-        Loader.shared.GetSingleton<DelegateCenter>().LoadGameScene();
+        // Reload game scene
+        this.sceneController.LoadGameScene();
+        // Start the game
         GameStart();
     }
-
+    /// <summary>
+    /// Init safe method for starting the game
+    /// </summary>
     public void GameStartInitSafe() {
+        // If init is not done, set it to start when first update hits
+        // if init is done, just start the game
         if (!this.isInitDone) {
-            this.GetComponent<LifeCycleDelegates>().OnceOnFirstFixedUpdate(() => {
+            this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
                 GameStart();
             });
         } else {
             GameStart();
         }
     }
-
+    /// <summary>
+    /// Method for starting the game
+    /// </summary>
     public void GameStart() {
         if (this.isGameStarted) { return; }
+        // Reset first fixed update flag
         this.isFirstFixedUpdateAfterStart = true;
+        // Reset game stats
         ResetLife();
         ResetScore();
+        // Reset pause stats
         GameResume();
-
-        Loader.shared.GetSingleton<DelegateCenter>().StartDifficultLoop(() => {
+        // Start difficulty loop to inscrease difficulty gradually
+        this.difficultyContoroller.StartDifficultLoop(() => {
             this.isGameStarted = true;
-            Loader.shared.GetSingleton<DelegateCenter>().StartSpawningEnemy();
-            if (Loader.shared.GetSingleton<DelegateCenter>().OnGameStart != null) { Loader.shared.GetSingleton<DelegateCenter>().OnGameStart(); }
+            this.enemyController.StartSpawning();
+            if (this.delegateCenter.OnGameStart != null) { this.delegateCenter.OnGameStart(); }
         });
     }
-
-    // Explicit overload for delegate
-    public void GameOver() {
-        GameOver(true);
-    }
-
-    public void GameOver(bool callOnGameover) {
+    /// <summary>
+    /// Method for ending the game
+    /// </summary>
+    /// <param name="callOnGameover">True for calling the OnGameOver delegate</param>
+    public void GameOver(bool callOnGameover = true) {
         if (!this.isGameStarted) { return; }
         this.isGameStarted = false;
-        Loader.shared.GetSingleton<DelegateCenter>().StopDifficultLoop();
-        Loader.shared.GetSingleton<DelegateCenter>().StopSpawningEnemy();
-        Loader.shared.GetSingleton<DelegateCenter>().ClearAllEnemies();
-        if(Loader.shared.GetSingleton<DelegateCenter>().OnGameOver != null && callOnGameover) { Loader.shared.GetSingleton<DelegateCenter>().OnGameOver(); }
+        this.difficultyContoroller.StopDifficultLoop();
+        this.enemyController.StopSpawning();
+        this.enemyController.ClearAllEnemies();
+        if(this.delegateCenter.OnGameOver != null && callOnGameover) { this.delegateCenter.OnGameOver(); }
         
     }
 // End: Game controls
 
 // Mark: Game stats
-    virtual protected void Score(int score) {
+    /// <summary>
+    /// Method for stacking score
+    /// </summary>
+    /// <param name="score">score to increase</param>
+    public virtual void Score(int score) {
         this.score += score;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
+        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
     }
-
-    virtual protected void DeductLife(int amount) {
+    /// <summary>
+    /// Method for deducting life
+    /// </summary>
+    /// <param name="amount">Life amount to deduct</param>
+    public virtual void DeductLife(int amount) {
         this.life -= amount;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
+        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
         if (this.life <= 0) {
             GameOver();
         }
     }
-
+    /// <summary>
+    /// Method for reset score
+    /// </summary>
     public void ResetScore() {
         this.score = 0;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
+        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
     }
-
+    /// <summary>
+    /// Method for reset life
+    /// </summary>
     public void ResetLife() {
         this.life = this.defaultLife;
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
+        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
         
     }
 // End: Game stats
 
 // Mark: Game events
-    virtual protected void OnGameStart() {
+    /// <summary>
+    /// Method called when game starts
+    /// </summary>
+    protected virtual void OnGameStart() {
 
     }
-
-    virtual protected void OnGameOver() {
+    /// <summary>
+    /// Method called when game overs
+    /// </summary>
+    protected virtual void OnGameOver() {
         GameResume();
-        Loader.shared.GetSingleton<DelegateCenter>().SetStatsBarActive(false);
+        this.delegateCenter.SetStatsBarActive(false);
         this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score, false, ()=> {
-            Loader.shared.GetSingleton<DelegateCenter>().SetStatsBarActive(true);
+            this.delegateCenter.SetStatsBarActive(true);
         });
     }
-
-    virtual protected void OnGamePause() {
-        Loader.shared.GetSingleton<DelegateCenter>().BlurBGM();
+    /// <summary>
+    /// Method called when game pauses
+    /// </summary>
+    protected virtual void OnGamePause() {
+        this.soundController.BlurBGM();
     }
-
-    virtual protected void OnGameResume() {
-        Loader.shared.GetSingleton<DelegateCenter>().NormalizeBGM();
+    /// <summary>
+    /// Method called when gmae resumes
+    /// </summary>
+    protected virtual void OnGameResume() {
+        this.soundController.NormalizeBGM();
     }
-
-    virtual protected void OnFirstUpdateAfterStart() {
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnScoreChange(this.score); }
-        if (Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange != null) { Loader.shared.GetSingleton<DelegateCenter>().OnLifeChange(this.life); }
+    /// <summary>
+    /// Method called when first update after starts
+    /// </summary>
+    protected virtual void OnFirstUpdateAfterStart() {
+        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
+        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
     }
-// End: Game events
-
+    // End: Game events
+    /// <summary>
+    /// Monobehaviour method for FixedUpdate
+    /// </summary>
     private void FixedUpdate() {
         if (this.isFirstFixedUpdateAfterStart) {
             this.isFirstFixedUpdateAfterStart = false;
@@ -164,40 +215,22 @@ public class GameController : ControllerBase {
     }
 
 // Mark: Singleton initialization
+    // Method for initializing delegates
     public override void InitializeDelegates() {
         base.InitializeDelegates();
         // Setup delegates
-        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
+        DelegateCenter mc = this.delegateCenter;
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        mc.Score += Score;
-        mc.DeductLife += DeductLife;
         mc.OnGameOver += OnGameOver;
         mc.OnGameStart += OnGameStart;
         mc.OnGamePause += OnGamePause;
         mc.OnGameResume += OnGameResume;
-        mc.GamePauseResume += GamePauseResume;
-        mc.GameRestart += GameRestart;
-        mc.GamePause += GamePause;
-        mc.GameResume += GameResume;
-        mc.GameOver += GameOver;
-        mc.GameStart += GameStartInitSafe;
-        Func<bool> IsGamePaused = () => { return this.isPaused; };
-        mc.IsGamePaused += IsGamePaused;
 
         lc.OnceOnDestroy(() => {
-            mc.Score -= Score;
-            mc.DeductLife -= DeductLife;
             mc.OnGameOver -= OnGameOver;
             mc.OnGameStart -= OnGameStart;
             mc.OnGamePause -= OnGamePause;
             mc.OnGameResume -= OnGameResume;
-            mc.GamePauseResume -= GamePauseResume;
-            mc.GameRestart -= GameRestart;
-            mc.GamePause -= GamePause;
-            mc.GameResume -= GameResume;
-            mc.GameOver -= GameOver;
-            mc.GameStart -= GameStartInitSafe;
-            mc.IsGamePaused -= IsGamePaused;
         });
         
         lc.OnceOnFirstFixedUpdate(() => {

@@ -4,18 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public partial class DelegateCenter {
-    public Action StartSpawningEnemy;
-    public Action StopSpawningEnemy;
-    public Action ClearAllEnemies;
-    public Action<float> SetEnemyDropSpeed;
-    public Action<float> SetEnemyMoveSpeed;
-    public Action<float> SetEnemySpawnInterval;
-    public Action<int> SetEnemyPositionIndexMax;
-    public Action<List<int>> ParseEnemyIndexes;
-}
-
-public class EnemyController : ControllerBase {
+public class EnemyController : MonoInjectable {
     [Header("Resources")]
     public List<string> skyMarkNames = new List<string>() { "E2", "E3" };
     public List<string> groundMarkNames = new List<string>() { "E1" };
@@ -37,23 +26,39 @@ public class EnemyController : ControllerBase {
     private List<Enemy> enemiesToSpawn = new List<Enemy>();
     private Coroutine spawningRouting = null;
 
+    [Inject]
+    protected ObjectPoolController objectPoolController;
+
+    /// <summary>
+    /// Method for start spawning enemy
+    /// </summary>
     public void StartSpawning() {
         if (this.spawningRouting != null) { return; }
         this.spawningRouting = StartCoroutine(EnemySpawningLoop());
     }
 
+    /// <summary>
+    /// Method for stop spawning enemy
+    /// </summary>
     public void StopSpawning() {
         if(this.spawningRouting == null) { return; }
         StopCoroutine(this.spawningRouting);
         this.spawningRouting = null;
     }
 
+    /// <summary>
+    /// Clear all enemies in the scene
+    /// </summary>
     public void ClearAllEnemies() {
         this.enemyPrefabs.ForEach((Enemy e) => {
-            Loader.shared.GetSingleton<DelegateCenter>().RecycleAll(e.GetComponent<Poolable>());
+            this.objectPoolController.RecycleAll(e.GetComponent<Poolable>());
         });
     }
 
+    /// <summary>
+    /// Enemy spawn routine
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator EnemySpawningLoop() {
         while (true) {
             SpawnEnemyRandomly();
@@ -62,6 +67,9 @@ public class EnemyController : ControllerBase {
         }
     }
 
+    /// <summary>
+    /// Method for spawn a random enemy
+    /// </summary>
     public void SpawnEnemyRandomly() {
         int spawnCount = this.enemiesToSpawn.Count;
         if(spawnCount  <= 0) { Debug.Log("There no enemy to spawn."); return; }
@@ -73,9 +81,14 @@ public class EnemyController : ControllerBase {
         SpawnEnemy(this.enemiesToSpawn[enemyIdx], this.allPosMarks[spotIdx]);
     }
 
+    /// <summary>
+    /// Method for spawn an enemy at specified location
+    /// </summary>
+    /// <param name="enemyToSpawn">Enemy prefab used to spawn enemy</param>
+    /// <param name="spawnMark">Spawn location mark</param>
     public void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
         Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = Loader.shared.GetSingleton<DelegateCenter>().GetPoolable(
+        Railable enemyOnRail = this.objectPoolController.GetPoolable(
             enemyPoolable,
             spawnMark.transform.position,
             spawnMark.transform.rotation)
@@ -84,6 +97,10 @@ public class EnemyController : ControllerBase {
         enemyOnRail.moveSpeed *= this.moveSpeed;
     }
 
+    /// <summary>
+    /// Parsing a sub set of enemy prefabs to spawn randomly
+    /// </summary>
+    /// <param name="indexes">Indexes in the prefab settings to choose</param>
     public void ParseEnemyIndexes(List<int> indexes) {
         if(indexes == null || indexes.Count == 0) {
             this.enemiesToSpawn = new List<Enemy>(this.enemyPrefabs);
@@ -140,38 +157,4 @@ public class EnemyController : ControllerBase {
         });
     }
 // End: Scene initialization
-
-// Mark: Singleton initialization
-    public override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter mc = Loader.shared.GetSingleton<DelegateCenter>();
-        // Enemy parameter settings
-        Action<float> SetEnemyDropSpeed = (value)=> { this.dropSpeed = value; };
-        mc.SetEnemyDropSpeed += SetEnemyDropSpeed;
-        Action<float> SetEnemyMoveSpeed = (value) => { this.moveSpeed = value; };
-        mc.SetEnemyMoveSpeed += SetEnemyMoveSpeed;
-        Action<float> SetEnemySpawnInterval = (value) => { this.spawnInterval = value; };
-        mc.SetEnemySpawnInterval += SetEnemySpawnInterval;
-        Action<int> SetEnemyPositionIndexMax = (value) => { this.rngPosIdxMax = value; };
-        mc.SetEnemyPositionIndexMax += SetEnemyPositionIndexMax;
-        mc.ParseEnemyIndexes += ParseEnemyIndexes;
-
-        // Spawning functions
-        mc.StartSpawningEnemy += StartSpawning;
-        mc.StopSpawningEnemy += StopSpawning;
-        mc.ClearAllEnemies += ClearAllEnemies;
-        
-        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
-            mc.SetEnemyDropSpeed -= SetEnemyDropSpeed;
-            mc.SetEnemyMoveSpeed -= SetEnemyMoveSpeed;
-            mc.SetEnemySpawnInterval -= SetEnemySpawnInterval;
-            mc.SetEnemyPositionIndexMax -= SetEnemyPositionIndexMax;
-            mc.ParseEnemyIndexes -= ParseEnemyIndexes;
-
-            mc.StartSpawningEnemy -= StartSpawning;
-            mc.StopSpawningEnemy -= StopSpawning;
-            mc.ClearAllEnemies -= ClearAllEnemies;
-        });
-    }
-// End: Singleton initialization
 }

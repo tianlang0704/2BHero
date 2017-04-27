@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DialogCredits : MonoBehaviour {
-    private InputController inputCont;
+public class DialogCredits : MonoInjectable {
+    [Inject]
+    protected InputController inputController;
+    [Inject]
+    protected SceneController sceneController;
 
     private void Update() {
-        this.inputCont.VariableDurationShoot((a, b) => {
-            Loader.shared.GetSingleton<DelegateCenter>().LoadMenuScene();
+        this.inputController.VariableDurationShoot((a, b) => {
+            this.sceneController.LoadMenuScene();
         });
-    }
-
-    private void Start() {
-        this.inputCont = Loader.shared.GetSingleton<InputController>();
     }
 }

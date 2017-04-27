@@ -2,11 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Poolable: MonoBehaviour {
-    //Used to check if the object is appeared at least once
+public class Poolable: MonoInjectable {
+    /// <summary>
+    /// Flag for check if it has to be shown in any camera for at least once
+    /// </summary>
     public bool appearAtLeastOnce = false;
+    /// <summary>
+    /// Set by PoolObjectController when created by it to track pool info
+    /// </summary>
     [HideInInspector] public PoolItem poolItem = null;
+    /// <summary>
+    /// Delegate called when poolable is recycled by controller
+    /// </summary>
     [HideInInspector] public Action recycleDelegate;
+    /// <summary>
+    /// Flag for checking if this poolable is on delayed recycle
+    /// </summary>
     [HideInInspector] public bool onDelayedRecycle = false;
 
     private Renderer r;
@@ -14,15 +25,20 @@ public class Poolable: MonoBehaviour {
     private bool appeared;
     private bool firstFrameAfterEnable;
 
+    // Dependencies
+    [Inject]
+    protected ObjectPoolController opc;
+
     public void Recycle() {
-        Loader.shared.GetSingleton<DelegateCenter>().Recycle(this);
+        this.opc.Recycle(this);
     }
 
     public void Recycle(float t) {
-        Loader.shared.GetSingleton<DelegateCenter>().RecycleWithDelay(this, t);
+        this.opc.Recycle(this, t);
     }
 
-    private void Awake() {
+    protected override void Awake() {
+        base.Awake();
         this.r = this.gameObject.GetComponent<Renderer>();
     }
 

@@ -5,14 +5,17 @@ using UnityEngine.SceneManagement;
 
 
 [RequireComponent(typeof(LifeCycleDelegates))]
-public class ControllerBase : MonoBehaviour {
+public class MonoInjectable : MonoBehaviour {
     [HideInInspector] public bool isDelegatesInitialzed = false;
+    [HideInInspector] public bool isAutoInject = true;
 
     protected virtual void Awake() {
+        if (this.isAutoInject) {
+            Loader.SafeInject(this);
+        }
     }
 
-    protected virtual void Start() {
-    }
+    protected virtual void Start() { }
 
     public virtual void InitializeDelegates() {
         this.isDelegatesInitialzed = true;

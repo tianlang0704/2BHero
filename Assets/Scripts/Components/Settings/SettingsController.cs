@@ -3,12 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class DelegateCenter {
-    public Func<bool> GetEnableTutorial;
-    public Action<bool> SetEnableTutorial;
-}
-
-public class SettingsController : ControllerBase {
+public class SettingsController : MonoInjectable {
     private int boolTrue = 1;
     private int boolFalse = 8;
     private string isTutorialEnabledKey = "EnableTutorial";
@@ -35,7 +30,6 @@ public class SettingsController : ControllerBase {
         this.isTutorialEnabled = true;
     }
 
-// Mark: Singleton initialization
     protected override void Awake() {
         base.Awake();
         if (this.isFirstRun) {
@@ -43,18 +37,4 @@ public class SettingsController : ControllerBase {
             this.isFirstRun = false;
         }
     }
-
-    public override void InitializeDelegates() {
-        base.InitializeDelegates();
-        DelegateCenter dc = Loader.shared.GetSingleton<DelegateCenter>();
-        Func<bool> GetEnableTutorial = () => { return this.isTutorialEnabled; };
-        Action<bool> SetEnableTutorial = (v) => { this.isTutorialEnabled = v; };
-        dc.GetEnableTutorial += GetEnableTutorial;
-        dc.SetEnableTutorial += SetEnableTutorial;
-        this.GetComponent<LifeCycleDelegates>().OnceOnDestroy(() => {
-            dc.GetEnableTutorial -= GetEnableTutorial;
-            dc.SetEnableTutorial -= SetEnableTutorial;
-        });
-    }
-    // End: Singleton initialization
 }
