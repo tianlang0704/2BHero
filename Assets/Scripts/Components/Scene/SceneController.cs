@@ -29,7 +29,6 @@ public class SceneController : MonoInjectable {
         // Not using delegate because setup needs to be in Awake,
         // which is earlier than delegate setup.
         Loader.shared.GetSingleton<ObjectPoolController>().SetupPoolControllerForScene();
-        Loader.shared.GetSingleton<EnemyController>().SetupEnemyControllerForScene();
         Loader.shared.GetSingleton<PlayerController>().SetupPlayerControllerForScene();
         Loader.shared.GetSingleton<ShootController>().SetupShootControllerForScene();
     }

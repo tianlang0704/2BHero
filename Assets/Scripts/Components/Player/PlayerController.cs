@@ -38,9 +38,9 @@ public class PlayerController : MonoInjectable {
     }
 
 // Mark: Scene initialization
-    public void SetupPlayerControllerForScene(bool parseMark = false) {
+    public void SetupPlayerControllerForScene(bool usePlayerMark = false) {
         ParsePositionsMarks();
-        if (parseMark) {
+        if (usePlayerMark) {
             GeneratePlayerFromMark();
         } else {
             GeneratePlayerForPosition(this.defaultPosition);

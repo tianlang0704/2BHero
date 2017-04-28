@@ -30,11 +30,12 @@ public class DifficultyContoroller : MonoInjectable {
     public float enemyIntervalInfStep = -0.03f;
     public List<float> enemyHPFactors = new List<float>() { 1 };
     public float enemyHPInfStep = 0;
-    public List<int> rngPosMaxes = new List<int>() { 1, 1, 2, 2, 2, 2, 2, 3 };
-    public List<IndexWrapper> enemyIndexes = new List<IndexWrapper>() {
-        new List<int>() { 0 },
-        new List<int>() { 0, 1, 2 },
-    };
+
+    public float moveSpeedFactor = 1;
+    public float spawnIntervalFactor = 1;
+    public float hpFactor = 1;
+    public int wave = 0;
+
 
     [Inject]
     protected EnemyController enemyController;
@@ -57,17 +58,6 @@ public class DifficultyContoroller : MonoInjectable {
 
     public float GetHPFactor(int index) {
         return FactorGenerator(this.enemyHPFactors, this.enemyHPInfStep, index);
-    }
-
-    public int GetRNGPosMaxFactor(int index) {
-        int posMaxIdx = this.rngPosMaxes.Count - 1;
-        return this.rngPosMaxes[index > posMaxIdx ? posMaxIdx : index];
-    }
-
-    private List<int> GetEnemyIndexesForWave(int index) {
-        int idxMax = this.enemyIndexes.Count - 1;
-        if(index > idxMax || idxMax < 0) { return null; }
-        return this.enemyIndexes[index].enemyIndexes;
     }
 
     private float FactorGenerator(List<float> factors, float infStep, int wantedIdx) {
@@ -126,23 +116,21 @@ public class DifficultyContoroller : MonoInjectable {
         // Wait for the first fixedUpdate so it's essentially after
         // Start event and all the delegates are initialized
         yield return new WaitForFixedUpdate();
-        int wave = 0;
-        UpdateEnemyDifficulty(wave);
+        wave = 0;
+        UpdateFactors(wave);
         if(gameStartCallback != null) { gameStartCallback(); }
         while (true) {
-            UpdateEnemyDifficulty(wave);
             yield return new WaitForSeconds(this.waveDuration);
+            UpdateFactors(wave);
             wave += 1;
         }
     }
 
      
-    private void UpdateEnemyDifficulty(int wave) {
-        this.enemyController.dropSpeed = GetMoveSpeedFactor(wave);
-        this.enemyController.moveSpeed = GetMoveSpeedFactor(wave);
-        this.enemyController.spawnInterval = GetSpawnIntervalFactor(wave);
-        this.enemyController.rngPosIdxMax = GetRNGPosMaxFactor(wave);
-        this.enemyController.ParseEnemyIndexes(GetEnemyIndexesForWave(wave));
+    private void UpdateFactors(int wave) {
+        this.moveSpeedFactor = GetMoveSpeedFactor(wave);
+        this.spawnIntervalFactor = GetSpawnIntervalFactor(wave);
+        this.hpFactor = GetHPFactor(wave);
     }
 // Mark: Difficulty loop functions
 }

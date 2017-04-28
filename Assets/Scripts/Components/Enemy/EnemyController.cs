@@ -14,20 +14,34 @@ public class EnemyController : MonoInjectable {
     [Header("Spawn Params")]
     public float intervalConst = 3f;
     public float minInterval = 0.5f;
-    [Header("Difficulty Factors(Set by difficulty controller)")]
-    public float dropSpeed;
-    public float moveSpeed;
-    public float spawnInterval;
-    public int rngPosIdxMax;
 
-    private List<GameObject> skyPosMarks = new List<GameObject>();
-    private List<GameObject> groundPosMarks = new List<GameObject>();
-    private List<GameObject> allPosMarks = new List<GameObject>();
-    private List<Enemy> enemiesToSpawn = new List<Enemy>();
+    private RandomList<EnemyGenerator> generatorList = new RandomList<EnemyGenerator>();
+    private List<EnemyGoal> goalList = new List<EnemyGoal>();
     private Coroutine spawningRouting = null;
+
+
 
     [Inject]
     protected ObjectPoolController objectPoolController;
+    [Inject]
+    protected DifficultyContoroller difficultyController;
+
+    public void RegisterGenerator(EnemyGenerator enemyGenerator) {
+        this.generatorList.Add(enemyGenerator);
+    }
+
+    public void UnregisterGenerator(EnemyGenerator enemyGenerator) {
+        this.generatorList.Remove(enemyGenerator);
+    }
+
+    public void RegisterGoal(EnemyGoal goal) {
+        this.goalList.Add(goal);
+    }
+
+    public void UnregisterGoal(EnemyGoal goal) {
+        this.goalList.Remove(goal);
+    }
+
 
     /// <summary>
     /// Method for start spawning enemy
@@ -36,7 +50,6 @@ public class EnemyController : MonoInjectable {
         if (this.spawningRouting != null) { return; }
         this.spawningRouting = StartCoroutine(EnemySpawningLoop());
     }
-
     /// <summary>
     /// Method for stop spawning enemy
     /// </summary>
@@ -45,15 +58,25 @@ public class EnemyController : MonoInjectable {
         StopCoroutine(this.spawningRouting);
         this.spawningRouting = null;
     }
-
     /// <summary>
     /// Clear all enemies in the scene
     /// </summary>
     public void ClearAllEnemies() {
-        this.enemyPrefabs.ForEach((Enemy e) => {
-            this.objectPoolController.RecycleAll(e.GetComponent<Poolable>());
+        this.generatorList.ForEach((EnemyGenerator eg) => {
+            eg.ClearAllEnemies();
         });
     }
+    /// <summary>
+    /// Method for using a random generator to generate a random enemy
+    /// </summary>
+    public void SpawnEnemyRandomly() {
+        int generatorCount = this.generatorList.Count;
+        if (generatorCount <= 0) { Debug.Log("There no enemy generator."); return; }
+
+        this.generatorList.GetRandom().SpawnEnemyRandomly();
+    }
+
+
 
     /// <summary>
     /// Enemy spawn routine
@@ -62,99 +85,10 @@ public class EnemyController : MonoInjectable {
     private IEnumerator EnemySpawningLoop() {
         while (true) {
             SpawnEnemyRandomly();
-            float interval = this.intervalConst * this.spawnInterval;
+            float interval = this.intervalConst * this.difficultyController.spawnIntervalFactor;
             yield return new WaitForSeconds(interval < this.minInterval ? this.minInterval : interval);
         }
     }
 
-    /// <summary>
-    /// Method for spawn a random enemy
-    /// </summary>
-    public void SpawnEnemyRandomly() {
-        int spawnCount = this.enemiesToSpawn.Count;
-        if(spawnCount  <= 0) { Debug.Log("There no enemy to spawn."); return; }
 
-        System.Random rng = new System.Random();
-        int enemyIdx = rng.Next(0, spawnCount);
-        int spotMax = this.allPosMarks.Count;
-        int spotIdx = rng.Next(0, this.rngPosIdxMax > spotMax ? spotMax : this.rngPosIdxMax);
-        SpawnEnemy(this.enemiesToSpawn[enemyIdx], this.allPosMarks[spotIdx]);
-    }
-
-    /// <summary>
-    /// Method for spawn an enemy at specified location
-    /// </summary>
-    /// <param name="enemyToSpawn">Enemy prefab used to spawn enemy</param>
-    /// <param name="spawnMark">Spawn location mark</param>
-    public void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
-        Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = this.objectPoolController.GetPoolable(
-            enemyPoolable,
-            spawnMark.transform.position,
-            spawnMark.transform.rotation)
-            .GetComponent<Railable>();
-        enemyOnRail.dropSpeed *= this.dropSpeed;
-        enemyOnRail.moveSpeed *= this.moveSpeed;
-    }
-
-    /// <summary>
-    /// Parsing a sub set of enemy prefabs to spawn randomly
-    /// </summary>
-    /// <param name="indexes">Indexes in the prefab settings to choose</param>
-    public void ParseEnemyIndexes(List<int> indexes) {
-        if(indexes == null || indexes.Count == 0) {
-            this.enemiesToSpawn = new List<Enemy>(this.enemyPrefabs);
-            return;
-        }
-
-        int idxMax = this.enemyPrefabs.Count - 1;
-        this.enemiesToSpawn.Clear();
-        indexes.ForEach((int idx) => {
-            if (idx > idxMax || idx < 0) { return; }
-            this.enemiesToSpawn.Add(this.enemyPrefabs[idx]);
-        });
-    }
-
-// Mark: Scene initialization
-    public void SetupEnemyControllerForScene() {
-        // Initialize enmey generating positions
-        ParsePositionsMarks();
-        // Initialize enemy goal
-        GenerateGoalsFromMarks();
-    }
-
-    private void ParsePositionsMarks() {
-        this.skyPosMarks.Clear();
-        this.groundPosMarks.Clear();
-        this.allPosMarks.Clear();
-
-        // Parse enemy generation position marks
-        foreach (string s in this.skyMarkNames) {
-            GameObject go = GameObject.Find(s);
-            if (!go) { Debug.Log("No mark object found for sky position: " + s); }
-            this.skyPosMarks.Add(go);
-        }
-        foreach (string s in this.groundMarkNames) {
-            GameObject go = GameObject.Find(s);
-            if (!go) { Debug.Log("No mark object found for ground position: " + s); }
-            this.groundPosMarks.Add(go);
-        }
-        this.allPosMarks.AddRange(this.groundPosMarks);
-        this.allPosMarks.AddRange(this.skyPosMarks);
-    }
-
-    private void GenerateGoalsFromMarks() {
-        List<GameObject> gos = new List<GameObject>(GameObject.FindObjectsOfType<GameObject>());
-        gos.ForEach((GameObject go) => {
-            if (go.name != this.enemyGoalMarkName) { return; }
-            GameObject scaleKeeper = new GameObject("ScaleKeeper");
-            scaleKeeper.transform.parent = go.transform.parent;
-            Instantiate(
-                this.goalPrefab,
-                go.transform.position,
-                go.transform.rotation,
-                scaleKeeper.transform);
-        });
-    }
-// End: Scene initialization
 }
