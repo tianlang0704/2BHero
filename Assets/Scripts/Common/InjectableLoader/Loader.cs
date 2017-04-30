@@ -58,7 +58,7 @@ public class Loader : MonoInjectable {
                 .Where(prop => Attribute.IsDefined(prop, typeof(Inject))));
         // 2. Set field according to Inject settings
         mis.ForEach((member) => {
-            // 2a. Check field
+            // 2a. Check field and get field type
             if(member.MemberType != MemberTypes.Field) {
                 Debug.Log("Loader can only inject field at this moment: " + injectable + " " + member);
                 return;
@@ -118,14 +118,7 @@ public class Loader : MonoInjectable {
     protected void InjectDependencies() {
         // Load dependencies for all preloaded singletons
         foreach (KeyValuePair<Type, MonoInjectable> kvp in this.singletons) {
-            // New dependency injection
             InjectDependencies(kvp.Value);
-
-            // Old delegate initialization
-            if (kvp.Value.isDelegatesInitialzed) { return; }
-            MethodInfo mi = kvp.Value.GetType().GetMethod("InitializeDelegates");
-            if (mi == null) { Debug.Log("Type does not have InitializeDelegates method: " + kvp.Value); return; }
-            mi.Invoke(kvp.Value, null);
         }
     }
     /// <summary>

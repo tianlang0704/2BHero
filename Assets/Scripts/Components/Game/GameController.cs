@@ -17,6 +17,7 @@ public partial class DelegateCenter {
 /// Class for managing game stats and pause-start
 /// </summary>
 public class GameController : MonoInjectable {
+    // Inspector public variables
     public int defaultScore = 0;
     public int defaultLife = 3;
     public DialogScore scoreMenuPrefab;
@@ -24,7 +25,7 @@ public class GameController : MonoInjectable {
 
 
 
-
+    // Non-Inpsector public variables
     [HideInInspector]
     public int score;
     [HideInInspector]
@@ -32,16 +33,19 @@ public class GameController : MonoInjectable {
 
 
 
-
+    // Private variables for internal use, self explanatory
     private bool isGameStarted = false;
     private bool isInitDone = false;
     private bool isFirstFixedUpdateAfterStart = true;
+
+
+
 
     // Dependencies
     [Inject]
     protected DelegateCenter delegateCenter;
     [Inject]
-    protected SceneController sceneController ;
+    protected SceneController sceneController;
     [Inject]
     protected DifficultyContoroller difficultyContoroller;
     [Inject]
@@ -226,10 +230,9 @@ public class GameController : MonoInjectable {
         }
     }
 
-// Mark: Singleton initialization
-    // Method for initializing delegates
-    public override void InitializeDelegates() {
-        base.InitializeDelegates();
+// Mark: initialization
+    protected override void Start() {
+        base.Start();
         // Setup delegates
         DelegateCenter mc = this.delegateCenter;
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
@@ -249,5 +252,5 @@ public class GameController : MonoInjectable {
             this.isInitDone = true;
         });
     }
-// End: Singleton initialization
+// End: initialization
 }

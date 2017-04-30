@@ -23,7 +23,9 @@ public class EnemyGenerator : MonoInjectable {
     [Header("Spawn Params")]
     public float intervalConst = 3f;
     public float minInterval = 0.5f;
-    private Coroutine spawningRouting = null;
+
+
+
 
     [Inject]
     protected ObjectPoolController objectPoolController;
