@@ -14,6 +14,7 @@ public class Railable : MonoBehaviour {
 
     private bool originalIsKinematic = false;
     private bool isMoveOnRail = false;
+    private Rigidbody2D rb2d;
 
     public void EnableMoveOnRail() {
         if (this.isMoveOnRail) { return; }
@@ -56,9 +57,13 @@ public class Railable : MonoBehaviour {
 
         // Otherwise do drop to ground and move forward on ground
         if (this.GetComponent<GroundDetector>().isInAir) {
-            this.GetComponent<Rigidbody2D>().velocity = this.dropSpeed;
+            this.rb2d.velocity = this.dropSpeed;
         } else if (this.GetComponent<GroundDetector>().isOnGround) {
-            this.GetComponent<Rigidbody2D>().velocity = this.moveSpeed;
+            this.rb2d.velocity = this.moveSpeed;
         }
+    }
+
+    private void Awake() {
+        this.rb2d = this.GetComponent<Rigidbody2D>();
     }
 }

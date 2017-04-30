@@ -22,8 +22,17 @@ public class GameController : MonoInjectable {
     public DialogScore scoreMenuPrefab;
     public bool isPaused { get { return Time.timeScale == 0; } set { Time.timeScale = value ? 0 : 1; } }
 
-    private int score;
-    private int life;
+
+
+
+    [HideInInspector]
+    public int score;
+    [HideInInspector]
+    public int life;
+
+
+
+
     private bool isGameStarted = false;
     private bool isInitDone = false;
     private bool isFirstFixedUpdateAfterStart = true;
@@ -39,6 +48,9 @@ public class GameController : MonoInjectable {
     protected EnemyController enemyController;
     [Inject]
     protected SoundController soundController;
+
+
+
 
 // Mark: Game controls
     /// <summary>

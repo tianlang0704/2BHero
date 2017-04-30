@@ -52,6 +52,8 @@ public class Shooter : MonoInjectable {
     protected DelegateCenter delegateCenter;
     [Inject]
     protected ObjectPoolController objectPoolController;
+    [Inject]
+    protected DifficultyContoroller difficultyController;
 
 // Mark: Shoot functions
     public void Shoot(float factor) {
@@ -117,7 +119,7 @@ public class Shooter : MonoInjectable {
         DisableShoot();
         StartCoroutine(ReloadRoutine(this.reloadDuration, () => {
             this.isReloading = false;
-            this.bulletCount = this.magazineSize;
+            this.bulletCount = this.difficultyController.magazineSize;
             EnableShoot();
         }));
     }
@@ -145,6 +147,8 @@ public class Shooter : MonoInjectable {
             dc.OnGameResume -= EnableShoot;
             dc.OnGamePause -= DisableShoot;
         });
-        lc.OnceOnFirstFixedUpdate(() => { this.bulletCount = this.magazineSize; });
+        lc.OnceOnFirstFixedUpdate(() => {
+            Reload();
+        });
     }
 }

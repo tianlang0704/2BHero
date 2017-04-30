@@ -28,7 +28,9 @@ public class ShootController : MonoInjectable {
 
     private void Update() {
         this.inputController.VariableDurationShoot((timePassed, isShoot)=> {
-            // Shoot Press End Handler
+            // =======================================
+            // ========Shoot Press End Handler========
+            // =======================================
             if (timePassed > this.maxPressTime) { timePassed = this.maxPressTime; }
             // Do last press in progress update to set progress to 0
             if (this.delegateCenter.OnShootHoldUpdate != null) {
@@ -42,7 +44,9 @@ public class ShootController : MonoInjectable {
             }
             if (this.delegateCenter.OnShootEnd != null) { this.delegateCenter.OnShootEnd(); }
         }, (timePassed)=> {
-            // Shoot Press In Progress Handler
+            // ===============================================
+            // ========Shoot Press In Progress Handler========
+            // ===============================================
             // Play aim animation when overlapped animation ends and key is still pressed
             this.shooters.ForEach((Shooter s) => { s.Aim(); });
             // Call shoot press on hold event
@@ -52,7 +56,9 @@ public class ShootController : MonoInjectable {
                 this.delegateCenter.OnShootHoldUpdate(timePassed * this.shootTimeFactor);
             }
         }, () => {
-            // Shoot Press Start Handler
+            // =========================================
+            // ========Shoot Press Start Handler========
+            // =========================================
             this.shooters.ForEach((Shooter s) => { s.Aim(); });
             // Call shoot press begin
             if (this.delegateCenter.OnShootStart != null) { this.delegateCenter.OnShootStart(); }
