@@ -105,7 +105,7 @@ public class GameController : MonoInjectable {
         // If init is not done, set it to start when first update hits
         // if init is done, just start the game
         if (!this.isInitDone) {
-            this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
+            this.GetComponent<LifeCycleDelegates>().OnceOnFirstUpdate(() => {
                 GameStart();
             });
         } else {

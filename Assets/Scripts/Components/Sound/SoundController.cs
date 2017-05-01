@@ -48,8 +48,20 @@ public class SoundController : MonoInjectable {
     private bool bgmEnabled = true;
     private string currentSettingName = null;
 
+    private void InitSafeBGMForScene(string sceneName) {
+        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
+        if (!lc.isAfterFirstUpdate) {
+            lc.OnceOnFirstUpdate(() => {
+                PlayBGMForSetting(sceneName);
+            });
+        } else {
+            PlayBGMForSetting(sceneName);
+        }
+    }
+
     public void PlayBGMForSetting(string settingName) {
         this.bgmEnabled = true;
+        StopBGM();
         this.bgms.ForEach((setting) => {
             if(setting.settingName == settingName) {
                 this.currentSettingName = settingName;
@@ -80,10 +92,13 @@ public class SoundController : MonoInjectable {
         PlayBGMContinuously();
     }
 
-// Mark: Singleton initialization
+// Mark: initialization
     override protected void Awake() {
         base.Awake();
         this.mainMixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
+        this.GetComponent<LifeCycleDelegates>().SubOnSceneLoaded((scene, mode) => {
+            InitSafeBGMForScene(scene.name);
+        });
     }
-// End: Singleton initialization
+// End: initialization
 }

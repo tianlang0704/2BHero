@@ -109,5 +109,8 @@ public class ShootController : MonoInjectable {
         base.Awake();
         this.shootTimeFactor = 1 / this.maxPressTime;
         this.prefabIndex = this.defaultPrefabIndex;
+        this.GetComponent<LifeCycleDelegates>().SubOnSceneLoaded((scene, mode) => {
+            SetupShootControllerForScene();
+        });
     }
 }

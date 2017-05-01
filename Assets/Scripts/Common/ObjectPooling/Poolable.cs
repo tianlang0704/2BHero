@@ -4,9 +4,21 @@ using UnityEngine;
 
 public class Poolable: MonoInjectable {
     /// <summary>
+    /// Inspector variable for setting how many to cache in the pool
+    /// </summary>
+    public int amountToPool = 5;
+    /// <summary>
+    /// Inspector variable for if it shrinks back to the cache number set
+    /// </summary>
+    public bool isShrinkBack = true;
+    /// <summary>
     /// Flag for check if it has to be shown in any camera for at least once
     /// </summary>
     public bool appearAtLeastOnce = false;
+
+
+
+
     /// <summary>
     /// Set by PoolObjectController when created by it to track pool info
     /// </summary>
@@ -20,10 +32,17 @@ public class Poolable: MonoInjectable {
     /// </summary>
     [HideInInspector] public bool onDelayedRecycle = false;
 
+
+
+
     private Renderer r;
     private bool lastFrameVisible;
-    private bool appeared;
+    private bool isAppearedOnce;
     private bool firstFrameAfterEnable;
+
+
+
+
 
     // Dependencies
     [Inject]
@@ -50,21 +69,25 @@ public class Poolable: MonoInjectable {
         // Make sure active status is updated on the first frame after enable
         this.firstFrameAfterEnable = true;
         // Reset appeared
-        this.appeared = !this.appearAtLeastOnce;
+        this.isAppearedOnce = !this.appearAtLeastOnce;
     }
 
     private void UpdateActive() {
-        // Check for visible change
+        // Check for visibility change, and need to set the visibility on first frame
+        // And recycle poolable object if it's not visible anymore
         if (this.r.isVisible != lastFrameVisible || this.firstFrameAfterEnable) {
-            // Reset first frame flag after first frame
-            if(this.firstFrameAfterEnable) { this.firstFrameAfterEnable = !this.firstFrameAfterEnable; }
-            // Once visible changed, set last frame visible
+            // 1. Once visible changed or on first frame, set last frame visible
             this.lastFrameVisible = this.r.isVisible;
-            // Recycle according to appear once setting and visible status
-            if (this.appeared && !this.r.isVisible) {
+            // 2. If on first frame after enable, set the flag to false
+            if (this.firstFrameAfterEnable) { this.firstFrameAfterEnable = false; }
+
+            // 3. Recycle according to appear once setting and visible status
+            if (this.isAppearedOnce && !this.r.isVisible) {
+                // 3a. if it's already appeared and is not visible, recycle it
                 Recycle();
             }else {
-                this.appeared = this.r.isVisible;
+                // 3b. If not appeared, update is appeared flag to visible
+                this.isAppearedOnce = this.r.isVisible;
             }
         }
     }

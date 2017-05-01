@@ -84,7 +84,7 @@ public class EnemyGenerator : MonoInjectable {
     /// <param name="spawnMark">Spawn location mark</param>
     private void SpawnEnemy(Enemy enemyToSpawn, GameObject spawnMark) {
         Poolable enemyPoolable = enemyToSpawn.GetComponent<Poolable>();
-        Railable enemyOnRail = this.objectPoolController.GetPoolable(
+        Railable enemyOnRail = this.objectPoolController.InstantiatePoolable(
             enemyPoolable,
             spawnMark.transform.position,
             spawnMark.transform.rotation)

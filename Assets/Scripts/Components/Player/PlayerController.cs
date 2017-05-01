@@ -14,13 +14,15 @@ public class PlayerController : MonoInjectable {
     private int currentPosition = 0;
     private List<GameObject> positionMarks = new List<GameObject>();
     private Player player;
-    private InputController inputCont;
 
     [Inject]
     protected GameController gameController;
+    [Inject]
+    protected InputController inputController;
 
-	private void Update () {
-        this.inputCont.PlayerMoveUp(()=> {
+
+    private void Update () {
+        this.inputController.PlayerMoveUp(()=> {
             if (this.gameController.isPaused) { return; }
             if (this.currentPosition < this.maxPosition) {
                 this.currentPosition += 1;
@@ -28,7 +30,7 @@ public class PlayerController : MonoInjectable {
             }
         });
 
-        this.inputCont.PlayerMoveDown(() => {
+        this.inputController.PlayerMoveDown(() => {
             if (this.gameController.isPaused) { return; }
             if (this.currentPosition > 0) {
                 this.currentPosition -= 1;
@@ -86,15 +88,13 @@ public class PlayerController : MonoInjectable {
     }
 // End: Scene initialization
 
-// Mark: Singleton initialization
+// Mark: initialization
     override protected void Awake() {
         base.Awake();
         this.currentPosition = this.defaultPosition;
+        this.GetComponent<LifeCycleDelegates>().SubOnSceneLoaded((scene, mode) => {
+            SetupPlayerControllerForScene();
+        });
     }
-
-    protected override void Start() {
-        base.Start();
-        this.inputCont = Loader.shared.GetSingleton<InputController>();
-    }
-    // End: Singleton initialization
+// End: initialization
 }

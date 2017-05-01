@@ -13,7 +13,7 @@ public class DialogTutorial : PopupDialogBase {
 
     protected override void Awake() {
         base.Awake();
-        this.GetComponent<LifeCycleDelegates>().OnceOnFirstdUpdate(() => {
+        this.GetComponent<LifeCycleDelegates>().OnceOnFirstUpdate(() => {
             if (this.settingsController.isTutorialEnabled) {
                 this.gameObject.SetActive(true);
                 this.gameController.GamePause();

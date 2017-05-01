@@ -2,17 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum SubEvent {
-    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate
+    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate, OnSceneLoaded
 }
 
 public enum UnsubEvent{
-    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate
+    OnDestroy, OnRecycle, OnFirstFixedUpdate, OnFirstUpdate, OnSceneLoaded
 }
 
 public class SubInfo {
     public Action sub;
+    public Action<Scene, LoadSceneMode> sceneSub;
     public SubEvent subOn;
     public UnsubEvent unsubOn;
 
@@ -22,26 +24,35 @@ public class SubInfo {
         this.subOn = subOn;
         this.unsubOn = unsubOn;
     }
+    public SubInfo(Action<Scene, LoadSceneMode> sceneSub, SubEvent subOn, UnsubEvent unsubOn) {
+        this.sceneSub = sceneSub;
+        this.subOn = subOn;
+        this.unsubOn = unsubOn;
+    }
 }
 
-// This class has two main functionalities
-//
-// 1. Life Cycle Exposion
-// expose some of the gameobject's life cycle events as delegates to
-// other components and objects so that they can react to the events
-//
-// 2. Auto-Unsub
-// objects can specify unsub event when subscribing to the event on
-// this component so they don't have to check and unsub themselves.
-// And at the same time they don't have to have a seperate portion of the
-// code to deal with the unsubscription -- both sub and unsub will be in 
-// the same context and in the same block.
+
+/// <summary>
+/// This class has two main functionalities
+///
+/// 1. Life Cycle Exposion
+/// expose some of the gameobject's life cycle events as delegates to
+/// other components and objects so that they can react to the events
+///
+/// 2. Auto-Unsub
+/// objects can specify unsub event when subscribing to the event on
+/// this component so they don't have to check and unsub themselves.
+/// And at the same time they don't have to have a seperate portion of the
+/// code to deal with the unsubscription -- both sub and unsub will be in 
+/// the same context and in the same block.
+/// </summary>
 public class LifeCycleDelegates : MonoBehaviour {
     //TODO: Rewrite using dicitonary
     public Action OnDestroyDelegate;
     public Action OnRecycleDelegate;
     public Action OnFirstFixedUpdateDelegate;
     public Action OnFirstUpdateDelegate;
+    public Action<Scene, LoadSceneMode> OnSceneLoadDelegate;
     [HideInInspector] public bool isAfterFirstFixedUpdate = false;
     [HideInInspector] public bool isAfterFirstUpdate = false;
 
@@ -53,6 +64,10 @@ public class LifeCycleDelegates : MonoBehaviour {
         return Sub(sub, SubEvent.OnRecycle, UnsubEvent.OnDestroy);
     }
 
+    public SubInfo SubOnSceneLoaded(Action<Scene, LoadSceneMode> sub) {
+        return Sub(sub, SubEvent.OnSceneLoaded, UnsubEvent.OnDestroy);
+    }
+
     public SubInfo OnceOnDestroy(Action sub) {
         return Sub(sub, SubEvent.OnDestroy, UnsubEvent.OnDestroy);
     }
@@ -60,8 +75,8 @@ public class LifeCycleDelegates : MonoBehaviour {
     public SubInfo OnceOnFirstFixedUpdate(Action sub) {
         return Sub(sub, SubEvent.OnFirstFixedUpdate, UnsubEvent.OnFirstFixedUpdate);
     }
-
-    public SubInfo OnceOnFirstdUpdate(Action sub) {
+     
+    public SubInfo OnceOnFirstUpdate(Action sub) {
         return Sub(sub, SubEvent.OnFirstUpdate, UnsubEvent.OnFirstUpdate);
     }
 
@@ -82,6 +97,20 @@ public class LifeCycleDelegates : MonoBehaviour {
                 break;
             default: break;
         }
+        this.removeTracker.Add(newSubInfo);
+        return newSubInfo;
+    }
+
+    /// <summary>
+    /// Special case for SceneLoaded
+    /// </summary>
+    /// <param name="sceneSub">Action to execute when subed event is reached</param>
+    /// <param name="subOn">Sub event</param>
+    /// <param name="unsubOn">Unsub event</param>
+    /// <returns></returns>
+    public SubInfo Sub(Action<Scene, LoadSceneMode> sceneSub, SubEvent subOn, UnsubEvent unsubOn) {
+        SubInfo newSubInfo = new SubInfo(sceneSub, subOn, unsubOn);
+        this.OnSceneLoadDelegate += sceneSub;
         this.removeTracker.Add(newSubInfo);
         return newSubInfo;
     }
@@ -114,6 +143,9 @@ public class LifeCycleDelegates : MonoBehaviour {
                 case SubEvent.OnFirstUpdate:
                     this.OnFirstUpdateDelegate -= s.sub;
                     break;
+                case SubEvent.OnSceneLoaded:
+                    this.OnSceneLoadDelegate -= s.sceneSub;
+                    break;
                 default: break;
             }
             this.removeTracker.Remove(s);
@@ -145,6 +177,12 @@ public class LifeCycleDelegates : MonoBehaviour {
         List<SubInfo> result = this.removeTracker.FindAll((SubInfo s) => { return s.unsubOn == UnsubEvent.OnFirstUpdate; });
         UnsubAll(result);
     }
+
+    private void OnSceneLoad(Scene scene, LoadSceneMode mode) {
+        if (this.OnSceneLoadDelegate != null) { this.OnSceneLoadDelegate(scene, mode); }
+        List<SubInfo> result = this.removeTracker.FindAll((SubInfo s) => { return s.unsubOn == UnsubEvent.OnSceneLoaded; });
+        UnsubAll(result);
+    }
 // End: Life Cycle Events
 
     private IEnumerator WaitForFixedUpateRoutine() {
@@ -169,5 +207,8 @@ public class LifeCycleDelegates : MonoBehaviour {
         }
         // Setup for OnFirstFixedUpdate event
         StartCoroutine(WaitForFixedUpateRoutine());
+        // Setup for OnSceneLoaded event
+        SceneManager.sceneLoaded += OnSceneLoad;
+        OnceOnDestroy(() => { SceneManager.sceneLoaded -= OnSceneLoad; });
     }
 }

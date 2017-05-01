@@ -84,7 +84,7 @@ public class Shooter : MonoInjectable {
     public void DoShoot(float factor) {
         this.audioSource.PlayOneShot(this.shootSounds.GetRandom(), 0.7f);
         float horizontalForce = this.forceMin + this.forceDelta * factor;
-        Rigidbody2D newBulletRb2d = this.objectPoolController.GetPoolable(
+        Rigidbody2D newBulletRb2d = this.objectPoolController.InstantiatePoolable(
             this.bullet,
             this.spawnMark.position,
             this.gameObject.transform.rotation)

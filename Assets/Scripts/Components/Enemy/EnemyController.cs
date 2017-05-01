@@ -15,14 +15,16 @@ public class EnemyController : MonoInjectable {
     public float intervalConst = 3f;
     public float minInterval = 0.5f;
 
+
+
+
     private RandomList<EnemyGenerator> generatorList = new RandomList<EnemyGenerator>();
     private List<EnemyGoal> goalList = new List<EnemyGoal>();
     private Coroutine spawningRouting = null;
 
 
 
-    [Inject]
-    protected ObjectPoolController objectPoolController;
+
     [Inject]
     protected DifficultyContoroller difficultyController;
 
