@@ -6,11 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoInjectable {
     [Header("Resources")]
-    public List<string> skyMarkNames = new List<string>() { "E2", "E3" };
-    public List<string> groundMarkNames = new List<string>() { "E1" };
     public List<Enemy> enemyPrefabs = new List<Enemy>();
-    public string enemyGoalMarkName = "EG1";
-    public EnemyGoal goalPrefab = null;
     [Header("Spawn Params")]
     public float intervalConst = 3f;
     public float minInterval = 0.5f;
