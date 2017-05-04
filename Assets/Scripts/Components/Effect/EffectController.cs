@@ -3,12 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[System.Serializable]
+
 public class EffectController: MonoInjectable {
     [Header("Score Settings")]
-    public GameObject ScorePrefab;
-    public Vector2 ScoreOffset = new Vector2(2, 1);
+    public EffectScore scorePrefab;
 
-    public void ShowScoreForObj(GameObject go, int score) {
+
+
+
+    [Inject]
+    protected ObjectPoolController objectPoolController;
+
+
+
+
+    public void ShowScoreAt(Vector3 position, int score) {
+        Poolable p = this.scorePrefab.GetComponent<Poolable>();
+        EffectScore scoreInst = 
+            this.objectPoolController.InstantiatePoolable(p, position)
+            .GetComponent<EffectScore>();
+        scoreInst.scoreAnimation.GetComponent<Text>().text = "+" + score.ToString();
+    }
+    public void ShowStackOfScoreAt(Vector3 position, int score) {
 
     }
 }

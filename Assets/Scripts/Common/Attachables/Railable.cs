@@ -5,12 +5,12 @@ using UnityEngine;
 [RequireComponent(typeof(GroundDetector))]
 public class Railable : MonoBehaviour {
     [Header("Pysics Settings")]
-    public Vector2 defaultDropSpeed = new Vector2(0, -3);
-    public Vector2 defaultMoveSpeed = new Vector2(4, 0);
+    public Vector3 defaultDropSpeed = new Vector3(0, -3);
+    public Vector3 defaultMoveSpeed = new Vector3(4, 0);
     public bool isFowardInAir = false;
     
-    [HideInInspector] public Vector2 dropSpeed;
-    [HideInInspector] public Vector2 moveSpeed;
+    [HideInInspector] public Vector3 dropSpeed;
+    [HideInInspector] public Vector3 moveSpeed;
 
     private bool originalIsKinematic = false;
     private bool isMoveOnRail = false;
@@ -31,7 +31,7 @@ public class Railable : MonoBehaviour {
         if (rb2d) {
             this.originalIsKinematic = rb2d.isKinematic;
             rb2d.isKinematic = false;
-            rb2d.velocity = Vector2.zero;
+            rb2d.velocity = Vector3.zero;
         }
         this.isMoveOnRail = false;
     }

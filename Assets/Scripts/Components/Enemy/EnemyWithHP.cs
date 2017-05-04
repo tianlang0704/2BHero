@@ -12,6 +12,7 @@ public class EnemyWithHP : Enemy {
     public bool isDropOnSpawn = false;
     public bool isDropOnDie = false;
     [Header("Animation Settings")]
+    public Vector3 scoreOffset = new Vector3(0, 1, 0);
     public float delayDeath = 1f;
     [Header("Sound Settings")]
     [SerializeField] private List<AudioClip> _hitSounds = new RandomList<AudioClip>();
@@ -26,6 +27,8 @@ public class EnemyWithHP : Enemy {
 
     [Inject]
     protected GameController gameController;
+    [Inject]
+    protected EffectController effectControler;
 
     virtual public void Hit(BulletWithDamage dmger) {
         this.hp -= dmger.damage;
@@ -47,36 +50,41 @@ public class EnemyWithHP : Enemy {
         }
     }
 
-
-// Mark: Enemy Events
-    virtual protected void OnDie() {
-        // Change layer so that bullet won't hit anymore
-        this.gameObject.layer = LayerMask.NameToLayer("EnemyDead");
-        // Cancel drop if dropping
-        this.GetComponent<Droppable>().CancelDrop();
-        // Disable rail movement
-        this.GetComponent<Railable>().DisableMoveOnRail();
-        // Die in air or after drop to the ground
-        if (!this.isDropOnDie) {
-            AnimatdRecycle();
-        } else {
-            this.GetComponent<Droppable>().Drop(() => {
-                AnimatdRecycle();
-            });
-        }
-    }
-
     private void AnimatdRecycle() {
         this.GetComponent<Animator>().SetTrigger("dying");
         this.audioSource.PlayOneShot(this.dieSounds.GetRandom(), 0.9f);
         base.Recycle(this.delayDeath);
     }
 
+    private void Score() {
+        this.effectControler.ShowScoreAt(this.transform.position + this.scoreOffset, 10);
+        this.gameController.Score(this.score);
+    }
+
+// Mark: Enemy Events
+    virtual protected void OnDie() {
+        // 1. Change layer so that bullet won't hit anymore
+        this.gameObject.layer = LayerMask.NameToLayer("EnemyDead");
+        // 2. Cancel drop if dropping
+        this.GetComponent<Droppable>().CancelDrop();
+        // 3. Disable rail movement
+        this.GetComponent<Railable>().DisableMoveOnRail();
+        // 4. Die in air or after drop to the ground
+        if (!this.isDropOnDie) {
+            AnimatdRecycle();
+            Score();
+        } else {
+            this.GetComponent<Droppable>().Drop(() => {
+                AnimatdRecycle();
+                Score();
+            });
+        }
+    }
+
     virtual protected void OnHit(BulletWithDamage dmger) {
         this.GetComponent<Animator>().SetTrigger("hit");
         this.audioSource.PlayOneShot(this.hitSounds.GetRandom(), 0.9f);
         if (!this.callOnDie && this.hp <= 0) {
-            this.gameController.Score(this.score);
             this.callOnDie = true;
             this.killer = dmger;
         }

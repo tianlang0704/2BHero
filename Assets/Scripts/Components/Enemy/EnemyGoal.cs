@@ -8,7 +8,7 @@ public class EnemyGoal : MonoInjectable {
     [Inject]
     protected EnemyController enemyController;
 
-    private void OnTriggerEnter2D(Collider2D collision) {
+    protected virtual void OnTriggerEnter2D(Collider2D collision) {
         if (collision.gameObject.tag == "Enemy") {
             this.gameController.DeductLife(1);
             collision.GetComponent<Enemy>().Recycle();

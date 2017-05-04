@@ -129,9 +129,9 @@ public class ObjectPoolController: MonoInjectable {
     /// <returns></returns>
     public Poolable InstantiatePoolable(
         Poolable poolable,
-        Vector2? position = null,
+        Vector3? position = null,
         Quaternion? rotation = null
-    ){
+    ) {
         //If found prefab create or return
         int found = this.poolItems.FindIndex((PoolItem pi) => { return poolable == pi.prefab; });
         if(found == -1) {
@@ -148,7 +148,7 @@ public class ObjectPoolController: MonoInjectable {
     /// <returns></returns>
     private Poolable ReturnOrCreatePoolable(
         PoolItem poolItem,
-        Vector2? position = null,
+        Vector3? position = null,
         Quaternion? rotation = null
     ){
         Poolable newPoolable = null;
@@ -163,7 +163,7 @@ public class ObjectPoolController: MonoInjectable {
             // 1b. Reset rigidbody
             Rigidbody2D rb2d = newPoolable.GetComponent<Rigidbody2D>();
             if (rb2d) {
-                rb2d.velocity = new Vector2(0, 0);
+                rb2d.velocity = new Vector3(0, 0);
                 rb2d.angularVelocity = 0;
             }
             // 1c. Reset visibility
@@ -205,7 +205,7 @@ public class ObjectPoolController: MonoInjectable {
     /// <returns></returns>
     private Poolable CreateNewPoolable(
         PoolItem pi,
-        Vector2? position = null,
+        Vector3? position = null,
         Quaternion? rotation = null
     ) {
         // Create new poolable and set position and rotation
@@ -215,7 +215,7 @@ public class ObjectPoolController: MonoInjectable {
         // Reset rigidbody
         Rigidbody2D rb2d = p.GetComponent<Rigidbody2D>();
         if (rb2d) {
-            rb2d.velocity = new Vector2(0, 0);
+            rb2d.velocity = new Vector3(0, 0);
             rb2d.angularVelocity = 0;
         }
         return p;

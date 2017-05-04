@@ -28,7 +28,7 @@ public class Sticker : MonoBehaviour {
         this.GetComponent<Collider2D>().enabled = false;
         Rigidbody2D r = this.GetComponent<Rigidbody2D>();
         if(r) {
-            r.velocity = Vector2.zero;
+            r.velocity = Vector3.zero;
             r.angularVelocity = 0f;
             r.isKinematic = true;
         }

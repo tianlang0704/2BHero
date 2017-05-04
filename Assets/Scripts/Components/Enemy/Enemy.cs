@@ -29,7 +29,6 @@ public class Enemy : MonoInjectable {
     protected override void Awake() {
         base.Awake();
         this.gameObject.SetActive(false);
-        LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
-        lc.SubOnRecycle(OnRecycle);
+        this.GetComponent<LifeCycleDelegates>().SubOnRecycle(OnRecycle); ;
     }
 }

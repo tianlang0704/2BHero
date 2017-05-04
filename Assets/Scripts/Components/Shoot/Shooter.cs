@@ -91,7 +91,7 @@ public class Shooter : MonoInjectable {
             .GetComponent<Rigidbody2D>();
         if (newBulletRb2d) {
             newBulletRb2d.AddForce(
-                new Vector2(horizontalForce, Math.Abs(horizontalForce * this.riseFactor)), 
+                new Vector3(horizontalForce, Math.Abs(horizontalForce * this.riseFactor)), 
                 ForceMode2D.Impulse);
             newBulletRb2d.AddTorque(this.torque * (1.5f - factor), ForceMode2D.Impulse);
         }

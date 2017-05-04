@@ -118,7 +118,7 @@ public class Droppable : MonoBehaviour {
         // Reset back kinematic settings
         Rigidbody2D rb2d = this.GetComponent<Rigidbody2D>();
         if (rb2d) {
-            if (this.resetInertiaAfterDrop) { rb2d.velocity = Vector2.zero; }
+            if (this.resetInertiaAfterDrop) { rb2d.velocity = Vector3.zero; }
             rb2d.isKinematic = this.originalIsKinematic;
             rb2d.gravityScale = this.originalDropGravity;
         }
