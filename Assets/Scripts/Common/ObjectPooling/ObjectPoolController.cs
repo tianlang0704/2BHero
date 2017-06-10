@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
+
+/// <summary>
+/// Pool tracker for each poolable prefab
+/// </summary>
 [System.Serializable]
 public class PoolItem {
     public PoolItem() { }
@@ -20,6 +25,15 @@ public class PoolItem {
     [HideInInspector] public int amountInPool { get { return this.poolableList.Count; } }
 }
 
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Controller class for poolable objects
 /// </summary>
@@ -28,25 +42,25 @@ public class ObjectPoolController: MonoInjectable {
     public string poolContainerName = "PoolContainer";
     public string poolableContainerSuffix = "Pool";
 
-
-
     /// <summary>
     /// Master tracker of the pool settings
     /// </summary>
     [HideInInspector] public List<PoolItem> poolItems = new List<PoolItem>();
-
-
 
     /// <summary>
     /// Master pool container
     /// </summary>
     private GameObject poolContainer = null;
 
-
-
     // Dependencies
     [Inject]
     protected SceneController sceneController;
+
+
+
+
+
+
 
 
 
@@ -113,6 +127,13 @@ public class ObjectPoolController: MonoInjectable {
         });
     }
 // End: Recycle methods
+
+
+
+
+
+
+
 
 
 
@@ -224,6 +245,13 @@ public class ObjectPoolController: MonoInjectable {
 
 
 
+
+
+
+
+
+
+
 // Mark: Pool methods
     /// <summary>
     /// Create new pool for a poolable object
@@ -272,6 +300,13 @@ public class ObjectPoolController: MonoInjectable {
         this.poolItems.Clear();
     }
 // End: Pool methods
+
+
+
+
+
+
+
 
 
 

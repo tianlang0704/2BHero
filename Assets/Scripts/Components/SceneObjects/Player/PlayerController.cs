@@ -41,11 +41,11 @@ public class PlayerController : MonoInjectable {
 
 // Mark: Scene initialization
     public void SetupPlayerControllerForScene(bool usePlayerMark = false) {
-        ParsePositionsMarks();
+        this.ParsePositionsMarks();
         if (usePlayerMark) {
-            GeneratePlayerFromMark();
+            this.GeneratePlayerFromMark();
         } else {
-            GeneratePlayerForPosition(this.defaultPosition);
+            this.GeneratePlayerForPosition(this.defaultPosition);
         }
     }
 

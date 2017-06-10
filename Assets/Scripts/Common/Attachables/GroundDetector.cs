@@ -10,6 +10,7 @@ public enum EnemyPositionStatus {
 public class GroundDetector : MonoBehaviour {
     public EnemyPositionStatus defaultPosStat = EnemyPositionStatus.InAir;
     public string groundTag = "Ground";
+    public float colliderBorderOffset = 0.0707f;
     [HideInInspector] public EnemyPositionStatus posStat;
     [HideInInspector] public Action OnLift;
     [HideInInspector] public Action OnLand;
@@ -21,19 +22,43 @@ public class GroundDetector : MonoBehaviour {
         this.posStat = this.defaultPosStat;
     }
 
-    virtual protected void OnTriggerExit2D(Collider2D collision) {
-        // Simple ground check for now
+    private void OnCollisionEnter2D(Collision2D collision) {
         if (collision.gameObject.tag == "Ground") {
-            this.posStat = EnemyPositionStatus.InAir;
-            if (OnLift != null) { OnLift(); }
+            Land();
         }
     }
 
-    virtual protected void OnTriggerEnter2D(Collider2D collision) {
-        // Simple ground check for now
+    private void OnCollisionExit2D(Collision2D collision) {
         if (collision.gameObject.tag == "Ground") {
-            this.posStat = EnemyPositionStatus.OnGround;
-            if (OnLand != null) { OnLand(); }
+            Lift();
         }
+    }
+
+    private void FixedUpdate() {
+        // If dynamic, use collider
+        if(this.GetComponent<Rigidbody2D>().bodyType == RigidbodyType2D.Dynamic) { return; }
+
+        // If not dynamic, use raycasting
+        int layerMask = LayerMask.GetMask(new string[] { "Ground" });
+        RaycastHit2D hit = Physics2D.Raycast(this.transform.position, Vector2.down, Mathf.Infinity, layerMask);
+        if(hit && hit.collider.gameObject.tag == "Ground") {
+            CapsuleCollider2D c2d = this.GetComponent<CapsuleCollider2D>();
+            float bottomToCenter = -c2d.offset.y + (c2d.size.y / 2);
+            if(hit.distance < bottomToCenter + this.colliderBorderOffset + Mathf.Epsilon) {
+                Land();
+            }else {
+                Lift();
+            }
+        }
+    }
+
+    private void Land() {
+        this.posStat = EnemyPositionStatus.OnGround;
+        if (OnLand != null) { OnLand(); }
+    }
+
+    private void Lift() {
+        this.posStat = EnemyPositionStatus.InAir;
+        if (OnLift != null) { OnLift(); }
     }
 }

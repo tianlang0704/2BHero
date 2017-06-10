@@ -11,18 +11,27 @@ public class EnemyController : MonoInjectable {
     public float intervalConst = 3f;
     public float minInterval = 0.5f;
 
-
-
-
+    /// <summary>
+    /// For tracking the generators
+    /// </summary>
     private RandomList<EnemyGenerator> generatorList = new RandomList<EnemyGenerator>();
-    private List<EnemyGoal> goalList = new List<EnemyGoal>();
+    /// <summary>
+    /// For saving the spawning routine
+    /// </summary>
     private Coroutine spawningRouting = null;
 
-
-
-
+    // Dependencies
     [Inject]
     protected DifficultyContoroller difficultyController;
+
+
+
+
+
+
+
+
+
 
     public void RegisterGenerator(EnemyGenerator enemyGenerator) {
         this.generatorList.Add(enemyGenerator);
@@ -32,13 +41,13 @@ public class EnemyController : MonoInjectable {
         this.generatorList.Remove(enemyGenerator);
     }
 
-    public void RegisterGoal(EnemyGoal goal) {
-        this.goalList.Add(goal);
-    }
 
-    public void UnregisterGoal(EnemyGoal goal) {
-        this.goalList.Remove(goal);
-    }
+
+
+
+
+
+
 
 
     /// <summary>
@@ -73,6 +82,13 @@ public class EnemyController : MonoInjectable {
 
         this.generatorList.GetRandom().SpawnEnemyRandomly();
     }
+
+
+
+
+
+
+
 
 
 

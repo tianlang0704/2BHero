@@ -52,16 +52,20 @@ public class GameController : MonoInjectable {
     protected EnemyController enemyController;
     [Inject]
     protected SoundController soundController;
+    [Inject]
+    protected PlayerController playerController;
+    [Inject]
+    protected WindowController windowController;
 
 
 
 
 // Mark: Game controls
-    /// <summary>
-    /// Toggle game pause resume
-    /// </summary>
-    /// <param name="pauseDo">Called when game paused</param>
-    /// <param name="resumeDo">Called when game resumed</param>
+/// <summary>
+/// Toggle game pause resume
+/// </summary>
+/// <param name="pauseDo">Called when game paused</param>
+/// <param name="resumeDo">Called when game resumed</param>
     public void GamePauseResume(Action pauseDo = null, Action resumeDo = null) {
         if (this.isPaused) {
             GameResume();
@@ -219,10 +223,35 @@ public class GameController : MonoInjectable {
         if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
         if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
     }
-    // End: Game events
     /// <summary>
-    /// Monobehaviour method for FixedUpdate
+    /// Method called when normal goal is reached by enemy
     /// </summary>
+    /// <param name="e">The enemy reached the goal</param>
+    protected virtual void OnNormalGoal(Enemy e) {
+        this.DeductLife(1);
+        e.Recycle();
+    }
+    /// <summary>
+    /// Method called when a correct enemy reached the rps goal
+    /// </summary>
+    /// <param name="e">The enemy reached the goal</param>
+    protected virtual void OnRPSGoalCorrect(Enemy e) {
+        this.Score(30);
+        e.Recycle();
+    }
+    /// <summary>
+    /// Method called when a incorrect enemy reached the rps goal
+    /// </summary>
+    /// <param name="e">The enemy reached the goal</param>
+    protected virtual void OnRPSGoalIncorrect(Enemy e) {
+        this.DeductLife(1);
+        e.Recycle();
+    }
+
+// End: Game events
+/// <summary>
+/// Monobehaviour method for FixedUpdate
+/// </summary>
     private void FixedUpdate() {
         if (this.isFirstFixedUpdateAfterStart) {
             this.isFirstFixedUpdateAfterStart = false;
@@ -240,12 +269,18 @@ public class GameController : MonoInjectable {
         mc.OnGameStart += OnGameStart;
         mc.OnGamePause += OnGamePause;
         mc.OnGameResume += OnGameResume;
+        mc.OnNormalGoal += OnNormalGoal;
+        mc.OnRPSGoalCorrect += OnRPSGoalCorrect;
+        mc.OnRPSGoalIncorrect += OnRPSGoalIncorrect;
 
         lc.OnceOnDestroy(() => {
             mc.OnGameOver -= OnGameOver;
             mc.OnGameStart -= OnGameStart;
             mc.OnGamePause -= OnGamePause;
             mc.OnGameResume -= OnGameResume;
+            mc.OnNormalGoal -= OnNormalGoal;
+            mc.OnRPSGoalCorrect -= OnRPSGoalCorrect;
+            mc.OnRPSGoalIncorrect -= OnRPSGoalIncorrect;
         });
         
         lc.OnceOnFirstFixedUpdate(() => {

@@ -21,6 +21,13 @@ public class Loader : MonoInjectable {
 
 
 
+
+
+
+
+
+
+
     /// <summary>
     /// Return a loaded singleton
     /// </summary>
@@ -95,8 +102,18 @@ public class Loader : MonoInjectable {
 
 
 
+
+
+
+
+
+
+
     /// <summary>
-    /// Initialization flag for loader
+    /// Initialization flag for loader.
+    ///  || Detailed explanation : loader is after awake stage when this flag is true.
+    /// This is used by SafeInject method and other initializaiton methods to deal with
+    /// requests before the loader is awake.
     /// </summary>
     [HideInInspector]
     public bool isInitialized = false;
@@ -123,17 +140,17 @@ public class Loader : MonoInjectable {
     }
     /// <summary>
     /// In awake, loader initialize to be a singleton
-    /// For later reloads, it loads more settings into the singleton,
-    /// and then inject dependencies for them
+    /// For later reloads, the reloaded instances loads more settings into the singleton and are discarded,
+    /// and the singleton inject dependencies for the newly loaded modules
     /// </summary>
     protected override void Awake() {
-        // Putting Init before base.Awake because Init sets isAutoInject used by base.Awake
+        // Putting Init before base.Awake because Init sets isAutoInject to false for reloaded
+        // instances for saving unnecessary reflections
         Init();
         base.Awake();
         // 1. Load more settings into loader singleton even when its singleton is already loaded
         Loader.shared.LoadSingletons(this.prefabs);
         this.isInitialized = true;
-
         // 2. Inject for loaded singletons and injectables in lateInjects list
         Loader.shared.InjectDependencies();
         Loader.lateInjects.ForEach((injectable) => {
@@ -141,6 +158,13 @@ public class Loader : MonoInjectable {
         });
         Loader.lateInjects.Clear();
     }
+
+
+
+
+
+
+
 
 
 
@@ -161,13 +185,11 @@ public class Loader : MonoInjectable {
         List<Loader> loaders = new List<Loader>(GameObject.FindObjectsOfType<Loader>());
         bool isAllLoadersInitialized = true;
         loaders.ForEach((loader) => { if (!loader.isInitialized) { isAllLoadersInitialized = false; } });
-
         // 2. If there's any loader not initialzed, add injectable to lateInject list to inject after init.
         if (loaders.Count == 0 || !isAllLoadersInitialized) {
             Loader.lateInjects.Add(injectable);
             return;
         }
-
         // 3. otherwise, just inject
         Loader.shared.InjectDependencies(injectable);
     }

@@ -9,8 +9,6 @@ public class EnemyWithHP : Enemy {
     [Header("Unit Settings")]
     public int defaultHP = 10;
     public int score = 10;
-    public bool isDropOnSpawn = false;
-    public bool isDropOnDie = false;
     [Header("Animation Settings")]
     public Vector3 scoreOffset = new Vector3(0, 1, 0);
     public float delayDeath = 1f;
@@ -30,11 +28,22 @@ public class EnemyWithHP : Enemy {
     [Inject]
     protected EffectController effectControler;
 
+
+
+
+
+
+
+
+
+// Mark: Public interfaces
     virtual public void Hit(BulletWithDamage dmger) {
         this.hp -= dmger.damage;
         OnHit(dmger);
     }
+// End: Public interfaces
 
+// Mark: General internal functions
     virtual protected void LateUpdate() {
         // Call OnDie when hp <= 0 after everything is updated
         if (this.callOnDie) {
@@ -60,6 +69,7 @@ public class EnemyWithHP : Enemy {
         this.effectControler.ShowScoreAt(this.transform.position + this.scoreOffset, 10);
         this.gameController.Score(this.score);
     }
+// End: General internal functions
 
 // Mark: Enemy Events
     virtual protected void OnDie() {
@@ -96,21 +106,6 @@ public class EnemyWithHP : Enemy {
         this.hp = this.defaultHP;
         this.killer = null;
         this.callOnDie = false;
-
-        // Reset physics
-        Collider2D c2d = this.GetComponent<Collider2D>();
-        if (c2d) { c2d.enabled = true; }
-        this.gameObject.layer = LayerMask.NameToLayer("Enemy");
-
-        // Check if drop on spawn
-        if (this.isDropOnSpawn) {
-            this.GetComponent<Railable>().DisableMoveOnRail();
-            this.GetComponent<Droppable>().Drop(() => {
-                this.GetComponent<Railable>().EnableMoveOnRail();
-            });
-        } else {
-            this.GetComponent<Railable>().EnableMoveOnRail();
-        }
     }
 
     protected override void OnRecycle() {
@@ -121,5 +116,5 @@ public class EnemyWithHP : Enemy {
         base.Awake();
         this.audioSource = this.GetComponent<AudioSource>();
     }
-    // Mark: Enemy Events
+// End: Enemy Events
 }

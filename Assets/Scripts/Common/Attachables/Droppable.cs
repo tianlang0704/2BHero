@@ -113,7 +113,7 @@ public class Droppable : MonoBehaviour {
     }
     /// <summary>
     /// Method to disable dropping used by the drop routine
-    /// </summary>
+    /// </summary>n
     private void ResetDrop() {
         // Reset back kinematic settings
         Rigidbody2D rb2d = this.GetComponent<Rigidbody2D>();
