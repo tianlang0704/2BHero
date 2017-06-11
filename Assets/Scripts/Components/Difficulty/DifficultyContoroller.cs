@@ -54,7 +54,7 @@ public class DifficultyContoroller : MonoInjectable {
 
 
     [Inject]
-    protected GameController gameController;
+    protected ScoringController scoringController;
 
 
 
@@ -92,7 +92,7 @@ public class DifficultyContoroller : MonoInjectable {
         int maxWaveIdx = this.magazineSizes.Count - 1;
         if (maxWaveIdx < 0) { throw new Exception("Must have at least one magazine size setting"); }
         if (waveIdx > maxWaveIdx) { waveIdx = maxWaveIdx; }
-        return this.magazineSizes[waveIdx] + (int)(this.gameController.score * this.scoreMagazineRatio);
+        return this.magazineSizes[waveIdx] + (int)(this.scoringController.score * this.scoreMagazineRatio);
     }
 
 

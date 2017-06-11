@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public partial class DelegateCenter {
-    public Action<int> OnScoreChange;
-    public Action<int> OnLifeChange;
     public Action<int> OnDifficultyIncrement;
     public Action OnGameOver;
     public Action OnGameStart;
@@ -17,29 +15,12 @@ public partial class DelegateCenter {
 /// Class for managing game stats and pause-start
 /// </summary>
 public class GameController : MonoInjectable {
-    // Inspector public variables
-    public int defaultScore = 0;
-    public int defaultLife = 3;
-    public DialogScore scoreMenuPrefab;
     public bool isPaused { get { return Time.timeScale == 0; } set { Time.timeScale = value ? 0 : 1; } }
-
-
-
-    // Non-Inpsector public variables
-    [HideInInspector]
-    public int score;
-    [HideInInspector]
-    public int life;
-
-
 
     // Private variables for internal use, self explanatory
     private bool isGameStarted = false;
     private bool isInitDone = false;
     private bool isFirstFixedUpdateAfterStart = true;
-
-
-
 
     // Dependencies
     [Inject]
@@ -56,16 +37,23 @@ public class GameController : MonoInjectable {
     protected PlayerController playerController;
     [Inject]
     protected WindowController windowController;
+    [Inject]
+    protected ScoringController scoringController;
+
+
+
+
+
 
 
 
 
 // Mark: Game controls
-/// <summary>
-/// Toggle game pause resume
-/// </summary>
-/// <param name="pauseDo">Called when game paused</param>
-/// <param name="resumeDo">Called when game resumed</param>
+    /// <summary>
+    /// Toggle game pause resume
+    /// </summary>
+    /// <param name="pauseDo">Called when game paused</param>
+    /// <param name="resumeDo">Called when game resumed</param>
     public void GamePauseResume(Action pauseDo = null, Action resumeDo = null) {
         if (this.isPaused) {
             GameResume();
@@ -124,8 +112,8 @@ public class GameController : MonoInjectable {
         // Reset first fixed update flag
         this.isFirstFixedUpdateAfterStart = true;
         // Reset game stats
-        ResetLife();
-        ResetScore();
+        this.scoringController.ResetLife();
+        this.scoringController.ResetScore();
         // Reset pause stats
         GameResume();
         // Start difficulty loop to inscrease difficulty gradually
@@ -151,40 +139,7 @@ public class GameController : MonoInjectable {
 // End: Game controls
 
 // Mark: Game stats
-    /// <summary>
-    /// Method for stacking score
-    /// </summary>
-    /// <param name="score">score to increase</param>
-    public virtual void Score(int score) {
-        this.score += score;
-        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
-    }
-    /// <summary>
-    /// Method for deducting life
-    /// </summary>
-    /// <param name="amount">Life amount to deduct</param>
-    public virtual void DeductLife(int amount) {
-        this.life -= amount;
-        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
-        if (this.life <= 0) {
-            GameOver();
-        }
-    }
-    /// <summary>
-    /// Method for reset score
-    /// </summary>
-    public void ResetScore() {
-        this.score = 0;
-        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
-    }
-    /// <summary>
-    /// Method for reset life
-    /// </summary>
-    public void ResetLife() {
-        this.life = this.defaultLife;
-        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
-        
-    }
+
 // End: Game stats
 
 // Mark: Game events
@@ -198,11 +153,8 @@ public class GameController : MonoInjectable {
     /// Method called when game overs
     /// </summary>
     protected virtual void OnGameOver() {
-        GameResume();
-        this.delegateCenter.SetStatsBarActive(false);
-        this.scoreMenuPrefab.ClonePrefabAndShow("Score", this.score, false, ()=> {
-            this.delegateCenter.SetStatsBarActive(true);
-        });
+        this.GameResume();
+        this.scoringController.ShowScore();
     }
     /// <summary>
     /// Method called when game pauses
@@ -220,15 +172,15 @@ public class GameController : MonoInjectable {
     /// Method called when first update after starts
     /// </summary>
     protected virtual void OnFirstUpdateAfterStart() {
-        if (this.delegateCenter.OnScoreChange != null) { this.delegateCenter.OnScoreChange(this.score); }
-        if (this.delegateCenter.OnLifeChange != null) { this.delegateCenter.OnLifeChange(this.life); }
+        this.scoringController.ResetLife();
+        this.scoringController.ResetScore();
     }
     /// <summary>
     /// Method called when normal goal is reached by enemy
     /// </summary>
     /// <param name="e">The enemy reached the goal</param>
     protected virtual void OnNormalGoal(Enemy e) {
-        this.DeductLife(1);
+        this.scoringController.DeductLife(1);
         e.Recycle();
     }
     /// <summary>
@@ -236,7 +188,7 @@ public class GameController : MonoInjectable {
     /// </summary>
     /// <param name="e">The enemy reached the goal</param>
     protected virtual void OnRPSGoalCorrect(Enemy e) {
-        this.Score(30);
+        this.scoringController.Score(30);
         e.Recycle();
     }
     /// <summary>
@@ -244,14 +196,14 @@ public class GameController : MonoInjectable {
     /// </summary>
     /// <param name="e">The enemy reached the goal</param>
     protected virtual void OnRPSGoalIncorrect(Enemy e) {
-        this.DeductLife(1);
+        this.scoringController.DeductLife(1);
         e.Recycle();
     }
 
 // End: Game events
-/// <summary>
-/// Monobehaviour method for FixedUpdate
-/// </summary>
+    /// <summary>
+    /// Monobehaviour method for FixedUpdate
+    /// </summary>
     private void FixedUpdate() {
         if (this.isFirstFixedUpdateAfterStart) {
             this.isFirstFixedUpdateAfterStart = false;

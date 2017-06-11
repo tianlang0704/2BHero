@@ -24,7 +24,7 @@ public class EnemyWithHP : Enemy {
     private AudioSource audioSource;
 
     [Inject]
-    protected GameController gameController;
+    protected ScoringController scoringController;
     [Inject]
     protected EffectController effectControler;
 
@@ -67,7 +67,7 @@ public class EnemyWithHP : Enemy {
 
     private void Score() {
         this.effectControler.ShowScoreAt(this.transform.position + this.scoreOffset, 10);
-        this.gameController.Score(this.score);
+        this.scoringController.Score(this.score);
     }
 // End: General internal functions
 

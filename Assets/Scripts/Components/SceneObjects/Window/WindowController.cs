@@ -14,6 +14,8 @@ public class WindowController : MonoInjectable {
 
     private RandomList<Window> windowList = new RandomList<Window>();
     private bool isRPSEnabled = true;
+    private Coroutine initDelayCoroutine = null;
+    private Coroutine rpsDelayCoroutine = null;
 
 
 
@@ -27,7 +29,7 @@ public class WindowController : MonoInjectable {
         Window rngWindow = this.GetRandomWindow();
         rngWindow.PlayInit();
         Action callbackWithWindow = () => { callback(rngWindow); };
-        base.StartCoroutine(this.DelayCoroutine(this.InitAnimationDelay, callbackWithWindow));
+        this.initDelayCoroutine = base.StartCoroutine(this.DelayCoroutine(this.InitAnimationDelay, callbackWithWindow));
     }
 
     public void RandomWindowRPS() {
@@ -49,11 +51,19 @@ public class WindowController : MonoInjectable {
     public void DisableRPS() {
         this.isRPSEnabled = false;
         this.ClearAllWindowRPS();
+        if (this.initDelayCoroutine != null) {
+            base.StopCoroutine(this.initDelayCoroutine);
+            this.initDelayCoroutine = null;
+        }
+        if(this.rpsDelayCoroutine != null) {
+            base.StopCoroutine(this.rpsDelayCoroutine);
+            this.rpsDelayCoroutine = null;
+        }
     } 
 
     public void OnRPSHit(Window rpsWindow) {
-        rpsWindow.ClearRPS();
-        base.StartCoroutine(this.DelayCoroutine(this.RPSInterval, ()=>{
+        if (rpsWindow != null) { rpsWindow.ClearRPS(); }
+        this.rpsDelayCoroutine = base.StartCoroutine(this.DelayCoroutine(this.RPSInterval, ()=>{
             if (!this.isRPSEnabled) { return; }
             this.RandomWindowRPS();
         }));
@@ -80,9 +90,7 @@ public class WindowController : MonoInjectable {
 
 // Mark: General internal functions
     private void OnGameStart() {
-        base.StartCoroutine(this.DelayCoroutine(this.RPSInterval, () => {
-            this.EnableRPS();
-        }));
+        this.OnRPSHit(null);
     }
 
     private void OnGameOver() {

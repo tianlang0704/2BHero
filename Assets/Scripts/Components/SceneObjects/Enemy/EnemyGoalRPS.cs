@@ -33,12 +33,18 @@ public class EnemyGoalRPS : EnemyGoal {
 
 
 
-
+    /// <summary>
+    /// The method to randomize the rps target by choosing one from the rps enemy prefabs
+    /// </summary>
+    /// <returns>The choosen rps target</returns>
     public Enemy RPS() {
         this.currentEnemy = this.rpsEnemyPrefabs[random.Next(this.rpsEnemyPrefabs.Count)];
         return currentEnemy;
     }
-
+    /// <summary>
+    /// Collision method used to check which enemy hit the goal and if it's the correct one.
+    /// </summary>
+    /// <param name="collision"></param>
     protected override void OnTriggerEnter2D(Collider2D collision) {
         if (collision.gameObject.tag == "Enemy") {
             Enemy enemy = collision.gameObject.GetComponent<Enemy>();
