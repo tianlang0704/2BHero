@@ -26,7 +26,7 @@ public class EnemyWithHP : Enemy {
     [Inject]
     protected ScoringController scoringController;
     [Inject]
-    protected EffectController effectControler;
+    protected EffectController effectController;
 
 
 
@@ -66,7 +66,7 @@ public class EnemyWithHP : Enemy {
     }
 
     private void Score() {
-        this.effectControler.ShowScoreAt(this.transform.position + this.scoreOffset, 10);
+        this.effectController.ShowScoreAt(this.transform.position + this.scoreOffset, 10, Color.white);
         this.scoringController.Score(this.score);
     }
 // End: General internal functions

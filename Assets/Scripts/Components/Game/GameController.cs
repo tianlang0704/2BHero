@@ -138,10 +138,6 @@ public class GameController : MonoInjectable {
     }
 // End: Game controls
 
-// Mark: Game stats
-
-// End: Game stats
-
 // Mark: Game events
     /// <summary>
     /// Method called when game starts
@@ -175,30 +171,6 @@ public class GameController : MonoInjectable {
         this.scoringController.ResetLife();
         this.scoringController.ResetScore();
     }
-    /// <summary>
-    /// Method called when normal goal is reached by enemy
-    /// </summary>
-    /// <param name="e">The enemy reached the goal</param>
-    protected virtual void OnNormalGoal(Enemy e) {
-        this.scoringController.DeductLife(1);
-        e.Recycle();
-    }
-    /// <summary>
-    /// Method called when a correct enemy reached the rps goal
-    /// </summary>
-    /// <param name="e">The enemy reached the goal</param>
-    protected virtual void OnRPSGoalCorrect(Enemy e) {
-        this.scoringController.Score(30);
-        e.Recycle();
-    }
-    /// <summary>
-    /// Method called when a incorrect enemy reached the rps goal
-    /// </summary>
-    /// <param name="e">The enemy reached the goal</param>
-    protected virtual void OnRPSGoalIncorrect(Enemy e) {
-        this.scoringController.DeductLife(1);
-        e.Recycle();
-    }
 
 // End: Game events
     /// <summary>
@@ -221,18 +193,12 @@ public class GameController : MonoInjectable {
         mc.OnGameStart += OnGameStart;
         mc.OnGamePause += OnGamePause;
         mc.OnGameResume += OnGameResume;
-        mc.OnNormalGoal += OnNormalGoal;
-        mc.OnRPSGoalCorrect += OnRPSGoalCorrect;
-        mc.OnRPSGoalIncorrect += OnRPSGoalIncorrect;
 
         lc.OnceOnDestroy(() => {
             mc.OnGameOver -= OnGameOver;
             mc.OnGameStart -= OnGameStart;
             mc.OnGamePause -= OnGamePause;
             mc.OnGameResume -= OnGameResume;
-            mc.OnNormalGoal -= OnNormalGoal;
-            mc.OnRPSGoalCorrect -= OnRPSGoalCorrect;
-            mc.OnRPSGoalIncorrect -= OnRPSGoalIncorrect;
         });
         
         lc.OnceOnFirstFixedUpdate(() => {
