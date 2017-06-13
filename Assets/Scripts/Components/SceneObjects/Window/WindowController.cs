@@ -72,6 +72,7 @@ public class WindowController : MonoInjectable {
         this.isRPSEnabled = true;
         if (this.rpsDelayCoroutine != null) { base.StopCoroutine(this.initDelayCoroutine); }
         this.rpsDelayCoroutine = base.StartCoroutine(this.DelayCoroutine(seconds, () => {
+            this.rpsDelayCoroutine = null;
             if (!this.isRPSEnabled) { return; }
             this.RandomWindowRPS();
         }));
