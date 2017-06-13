@@ -7,6 +7,7 @@ public partial class DelegateCenter {
     public Action<int> OnDifficultyIncrement;
     public Action OnGameOver;
     public Action OnGameStart;
+    public Action OnGameRestart;
     public Action OnGamePause;
     public Action OnGameResume;
 }
@@ -89,6 +90,7 @@ public class GameController : MonoInjectable {
         this.sceneController.LoadGameScene();
         // Start the game
         GameStart();
+        if (this.delegateCenter.OnGameRestart != null) { this.delegateCenter.OnGameRestart(); }
     }
     /// <summary>
     /// Init safe method for starting the game
@@ -107,7 +109,8 @@ public class GameController : MonoInjectable {
     /// <summary>
     /// Method for starting the game
     /// </summary>
-    public void GameStart() {
+    /// <param name="callOnGameStart">True for calling the OnGameStart delegate</param>
+    public void GameStart(bool callOnGameStart = true) {
         if (this.isGameStarted) { return; }
         // Reset first fixed update flag
         this.isFirstFixedUpdateAfterStart = true;
@@ -120,20 +123,20 @@ public class GameController : MonoInjectable {
         this.difficultyContoroller.StartDifficultLoop(() => {
             this.isGameStarted = true;
             this.enemyController.StartSpawning();
-            if (this.delegateCenter.OnGameStart != null) { this.delegateCenter.OnGameStart(); }
+            if (this.delegateCenter.OnGameStart != null && callOnGameStart) { this.delegateCenter.OnGameStart(); }
         });
     }
     /// <summary>
     /// Method for ending the game
     /// </summary>
-    /// <param name="callOnGameover">True for calling the OnGameOver delegate</param>
-    public void GameOver(bool callOnGameover = true) {
+    /// <param name="callOnGameOver">True for calling the OnGameOver delegate</param>
+    public void GameOver(bool callOnGameOver = true) {
         if (!this.isGameStarted) { return; }
         this.isGameStarted = false;
         this.difficultyContoroller.StopDifficultLoop();
         this.enemyController.StopSpawning();
         this.enemyController.ClearAllEnemies();
-        if(this.delegateCenter.OnGameOver != null && callOnGameover) { this.delegateCenter.OnGameOver(); }
+        if(this.delegateCenter.OnGameOver != null && callOnGameOver) { this.delegateCenter.OnGameOver(); }
         
     }
 // End: Game controls

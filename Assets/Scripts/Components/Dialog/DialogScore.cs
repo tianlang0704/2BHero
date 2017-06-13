@@ -28,6 +28,15 @@ public class DialogScore : PopupDialogBase {
     [Inject]
     protected GameController gameController;
 
+
+
+
+
+
+
+
+
+
     public void ClonePrefabAndShow(string title, int score, bool isHighScore = false, Action closeAction = null) {
         DialogScore s = Instantiate(this);
         s.score = score;

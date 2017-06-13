@@ -61,9 +61,17 @@ public class WindowController : MonoInjectable {
         }
     } 
 
-    public void OnRPSHit(Window rpsWindow) {
+    public void OnRPSHit(Window rpsWindow = null) {
         if (rpsWindow != null) { rpsWindow.ClearRPS(); }
-        this.rpsDelayCoroutine = base.StartCoroutine(this.DelayCoroutine(this.RPSInterval, ()=>{
+        if (this.isRPSEnabled) {
+            this.DelayedRPS(this.RPSInterval);
+        }
+    }
+
+    private void DelayedRPS(float seconds) {
+        this.isRPSEnabled = true;
+        if (this.rpsDelayCoroutine != null) { base.StopCoroutine(this.initDelayCoroutine); }
+        this.rpsDelayCoroutine = base.StartCoroutine(this.DelayCoroutine(seconds, () => {
             if (!this.isRPSEnabled) { return; }
             this.RandomWindowRPS();
         }));
@@ -90,7 +98,7 @@ public class WindowController : MonoInjectable {
 
 // Mark: General internal functions
     private void OnGameStart() {
-        this.OnRPSHit(null);
+        this.DelayedRPS(this.RPSInterval);
     }
 
     private void OnGameOver() {
