@@ -52,16 +52,16 @@ public class SoundController : MonoInjectable {
         LifeCycleDelegates lc = this.GetComponent<LifeCycleDelegates>();
         if (!lc.isAfterFirstUpdate) {
             lc.OnceOnFirstUpdate(() => {
-                PlayBGMForSetting(sceneName);
+                PlayBGMContinuously(sceneName);
             });
         } else {
-            PlayBGMForSetting(sceneName);
+            PlayBGMContinuously(sceneName);
         }
     }
 
-    public void PlayBGMForSetting(string settingName) {
-        this.bgmEnabled = true;
+    public void PlayBGMContinuously(string settingName) {
         StopBGM();
+        this.bgmEnabled = true;
         this.bgms.ForEach((setting) => {
             if(setting.settingName == settingName) {
                 this.currentSettingName = settingName;
@@ -77,11 +77,10 @@ public class SoundController : MonoInjectable {
         this.bgmSource.Stop();
     }
 
-    public void PlayBGMContinuously() {
+    private void PlayBGM() {
         if (!this.bgmEnabled || this.currentSettingName == null || this.bgmSource.isPlaying) { return; }
-        PlayBGMForSetting(this.currentSettingName);
+        PlayBGMContinuously(this.currentSettingName);
     }
-
 // End: BGM functions
 
     public void PlayUIOneShot(AudioClip clip) {
@@ -89,7 +88,7 @@ public class SoundController : MonoInjectable {
     }
 
     protected virtual void Update() {
-        PlayBGMContinuously();
+        PlayBGM();
     }
 
 // Mark: initialization
